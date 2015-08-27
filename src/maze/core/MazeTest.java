@@ -8,11 +8,14 @@ import org.junit.Test;
 import search.core.BestFirstHeuristic;
 import search.core.BestFirstSearcher;
 
+import java.io.*;
 import java.util.ArrayList;
 
 public class MazeTest {
 	final static int NUM_TESTS = 100;
 	final static int WIDTH = 10, HEIGHT = 15;
+	final static String homeDir = System.getProperty("user.home") + File.separator + "Desktop",
+			customFunctionPerformanceFile = "UserPerformanceResults.csv" ;
 
 	@Test
 	public void testNoTreasure() {
@@ -64,19 +67,24 @@ public class MazeTest {
 	}
 
 	@Test
-	public void testUserDefined() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+	public void testUserDefined() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
+		PrintWriter writer = new PrintWriter(homeDir + File.separator + customFunctionPerformanceFile, "UTF-8");
 		String prefix = "maze.heuristics";
 		AIReflector reflector = new AIReflector(BestFirstHeuristic.class, prefix);
 		ArrayList<String> names = reflector.getTypeNames();
+
 		for (String name : names){
+			writeToFile("total best, total breadth, " + name, writer);
 			String qualifiedName = prefix + "." + name;
 			BestFirstHeuristic<MazeExplorer> instance = (BestFirstHeuristic<MazeExplorer>) Class.forName(qualifiedName).newInstance();
-			defVBredth(instance);
+			for (int i = 0; i < NUM_TESTS; ++i)
+				defVBredth(instance, writer);
 		}
+		writer.close();
 	}
 
-	//just makes sure my code isn't worse than bredth first search.
-	public void defVBredth(BestFirstHeuristic hr){
+	//just makes sure my code isn't worse than breadth first search.
+	public void defVBredth(BestFirstHeuristic hr, PrintWriter writer) throws IOException {
 		int totalBest = 0, totalBreadth = 0;
 		for (int i = 0; i < NUM_TESTS; ++i) {
 			Maze m = new Maze(WIDTH, HEIGHT);
@@ -92,6 +100,11 @@ public class MazeTest {
 			totalBest += bestFirst.getNumNodes();
 			totalBreadth += breadthFirst.getNumNodes();
 		}
-		assertTrue(totalBest <= totalBreadth);
+		writeToFile(totalBest + ", " + totalBreadth, writer);
+		//assertTrue(totalBest <= totalBreadth);
+	}
+
+	public void writeToFile(String line, PrintWriter fos) throws IOException {
+		fos.println(line);
 	}
 }
