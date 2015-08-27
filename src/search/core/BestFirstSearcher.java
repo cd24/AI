@@ -1,4 +1,6 @@
 package search.core;
+import maze.core.MazeExplorer;
+
 import java.util.*;
 
 public class BestFirstSearcher<T extends BestFirstObject<T>> {
@@ -19,10 +21,11 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
         
         Set<T> visited = new HashSet<T>();
         SearchNode best = new SearchNode(null, start, target);
-        Queue<SearchNode> openList = new LinkedList<SearchNode>();
+        Queue<SearchNode> openList = getOpenList(target);
+        ArrayList<SearchNode> openNodes = new ArrayList<>();
         openList.add(best);
         
-        solutionFound = false;
+        solutionFound = false; // TODO: Evaluate whether we are at the end already -- could happen!
         while (openList.size() > 0 && !solutionFound) {
             best = openList.poll();
             if (debug) {System.out.println("best: " + best.getObject());}
@@ -39,6 +42,16 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
         if (solutionFound) {
             reconstructMoves(best);
         }
+    }
+
+    private Queue<SearchNode> getOpenList(T target){
+        PriorityQueue<SearchNode> queue = new PriorityQueue<>(10, (n1, n2) -> {
+            int distanceN1 = h.getDistance((T)n1.getObject(), target);
+            int distanceN2 = h.getDistance((T)n2.getObject(), target);
+            return distanceN1 - distanceN2;
+        });
+
+        return queue;
     }
     
     private void addSuccessors(SearchNode best, Queue<SearchNode> openList, T target) {
