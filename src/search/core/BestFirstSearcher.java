@@ -46,8 +46,8 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
 
     private Queue<SearchNode> getOpenList(T target){
         PriorityQueue<SearchNode> queue = new PriorityQueue<>(10, (n1, n2) -> {
-            int distanceN1 = h.getDistance((T)n1.getObject(), target);
-            int distanceN2 = h.getDistance((T)n2.getObject(), target);
+            int distanceN1 = h.getDistance(n1.getObject(), target);
+            int distanceN2 = h.getDistance(n2.getObject(), target);
             return distanceN1 - distanceN2;
         });
 
