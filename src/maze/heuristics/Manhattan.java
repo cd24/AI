@@ -1,5 +1,6 @@
 package maze.heuristics;
 
+import maze.core.MazeCell;
 import maze.core.MazeExplorer;
 import search.core.BestFirstHeuristic;
 
@@ -8,6 +9,9 @@ import search.core.BestFirstHeuristic;
  */
 public class Manhattan implements BestFirstHeuristic<MazeExplorer> {
     public int getDistance(MazeExplorer node, MazeExplorer goal) {
-        return 0;
+        MazeCell goalCell = goal.getLocation();
+        MazeCell nodeLocation = node.getLocation();
+        int manhattanDistance = goalCell.getManhattanDist(nodeLocation);
+        return manhattanDistance;
     }
 }

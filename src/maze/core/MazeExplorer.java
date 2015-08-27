@@ -48,6 +48,10 @@ public class MazeExplorer implements BestFirstObject<MazeExplorer> {
 		}
 		return "@" + location.toString() + treasures.toString();
 	}
+
+	public int getNumTreasures(){
+		return treasureFound.size();
+	}
 	
 	@Override
 	public int hashCode() {return toString().hashCode();}
