@@ -74,34 +74,25 @@ public class MazeTest {
 		ArrayList<String> names = reflector.getTypeNames();
 
 		for (String name : names){
-			writeToFile("total best, total breadth, " + name, writer);
+			writeToFile("nodes, depth, b*, solution length, " + name, writer);
 			String qualifiedName = prefix + "." + name;
 			BestFirstHeuristic<MazeExplorer> instance = (BestFirstHeuristic<MazeExplorer>) Class.forName(qualifiedName).newInstance();
-			for (int i = 0; i < NUM_TESTS; ++i)
-				defVBredth(instance, writer);
+			testUserHeuristic(instance, writer);
 		}
 		writer.close();
 	}
 
-	//just makes sure my code isn't worse than breadth first search.
-	public void defVBredth(BestFirstHeuristic hr, PrintWriter writer) throws IOException {
-		int totalBest = 0, totalBreadth = 0;
+	public void testUserHeuristic(BestFirstHeuristic hr, PrintWriter writer) throws IOException {
 		for (int i = 0; i < NUM_TESTS; ++i) {
 			Maze m = new Maze(WIDTH, HEIGHT);
 			m.makeMaze(new MazeCell(0, 0), new MazeCell(WIDTH - 1, HEIGHT - 1), 0, 1);
-			BestFirstSearcher<MazeExplorer> breadthFirst = new BestFirstSearcher<>(new maze.heuristics.BreadthFirst());
 			BestFirstSearcher<MazeExplorer> bestFirst = new BestFirstSearcher<>(hr);
 			MazeExplorer startNode = new MazeExplorer(m, m.getStart());
 			MazeExplorer endNode = new MazeExplorer(m, m.getEnd());
-			breadthFirst.solve(startNode, endNode);
 			bestFirst.solve(startNode, endNode);
-			assertTrue(breadthFirst.success());
 			assertTrue(bestFirst.success());
-			totalBest += bestFirst.getNumNodes();
-			totalBreadth += breadthFirst.getNumNodes();
+			writeToFile(bestFirst.getNumNodes() + ", " + bestFirst.getMaxDepth() + ", " + bestFirst.getBranchingFactor(Double.MAX_VALUE) + ", " + bestFirst.numSteps(), writer);
 		}
-		writeToFile(totalBest + ", " + totalBreadth, writer);
-		//assertTrue(totalBest <= totalBreadth);
 	}
 
 	public void writeToFile(String line, PrintWriter fos) throws IOException {

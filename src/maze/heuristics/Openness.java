@@ -9,6 +9,6 @@ public class Openness implements BestFirstHeuristic<MazeExplorer> {
     * */
     public int getDistance(MazeExplorer node, MazeExplorer goal) {
         int numOpenNeighbors = node.getSuccessors().size();
-        return numOpenNeighbors/4;  // a cell with fewer neighbors is preferred to cells with more.
+        return 1 - numOpenNeighbors/4;  // a cell with fewer neighbors is preferred to cells with more.
     }
 }

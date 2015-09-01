@@ -11,7 +11,7 @@ public class Manhattan implements BestFirstHeuristic<MazeExplorer> {
     public int getDistance(MazeExplorer node, MazeExplorer goal) {
         MazeCell goalCell = goal.getLocation();
         MazeCell nodeLocation = node.getLocation();
-        int manhattanDistance = goalCell.getManhattanDist(nodeLocation);
+        int manhattanDistance = nodeLocation.getManhattanDist(goalCell);
         return manhattanDistance;
     }
 }
