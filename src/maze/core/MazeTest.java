@@ -75,6 +75,7 @@ public class MazeTest {
 	@Test
 	public void testUserDefined() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
 		PrintWriter writer = new PrintWriter(homeDir + File.separator + customFunctionPerformanceFile, "UTF-8");
+		setMazeDimensions(100, 100);
 		testWithParameters(writer);
 
 		for (double i = 0.25; i <= 1; i += 0.25){
@@ -82,7 +83,7 @@ public class MazeTest {
 			testWithParameters(writer);
 		}
 
-		for (int i = 0; i < 20; i += 10){
+		for (int i = 0; i <= 20; i += 10){
 			configureTreasure(i, true);
 			testWithParameters(writer);
 		}
@@ -150,8 +151,7 @@ public class MazeTest {
 	}
 
 	public void writeResultsToFile(PrintWriter writer){
-		writer.println(NAME + ", "  + "Maze (W " + WIDTH + "|H " + HEIGHT + "), Number Treasures: " + NUM_TREASURES + ", Maze Perfection: " + PERFECTION);
-		writer.println(",nodes, depth, b*, solution length (Unreliable -- Averaging problem), times failed, number of trials");
+		writer.println(NAME + ",nodes,depth,b*,solution length (Unreliable -- Averaging problem),times failed,number of trials,, Maze Details:, "  + "Maze (W " + WIDTH + "|H " + HEIGHT + "), Number Treasures: " + NUM_TREASURES + ", Maze Perfection: " + PERFECTION);
 
 		for (String heuristic : results.keySet()){
 			double num_nodes = 0, max_depth = 0, branching_factor = 0, num_steps = 0;
