@@ -75,7 +75,7 @@ public class MazeTest {
 	@Test
 	public void testUserDefined() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
 		PrintWriter writer = new PrintWriter(homeDir + File.separator + customFunctionPerformanceFile, "UTF-8");
-		setMazeDimensions(100, 100);
+		setMazeDimensions(250, 250);
 		testWithParameters(writer);
 
 		for (double i = 0.25; i <= 1; i += 0.25){
@@ -83,10 +83,16 @@ public class MazeTest {
 			testWithParameters(writer);
 		}
 
-		for (int i = 0; i <= 20; i += 10){
+		for (int i = 0; i <= 1000; i += 250){
 			configureTreasure(i, true);
 			testWithParameters(writer);
 		}
+
+		for (double i = 0.25; i < 1; i += 0.25){
+			configureSmallMazes(i);
+			testWithParameters(writer);
+		}
+
 		writer.close();
 	}
 
@@ -98,6 +104,13 @@ public class MazeTest {
 
 	public void configurePerfections(double perfection){
 		NAME = "Perfection Test";
+		NUM_TREASURES = 50;
+		PERFECTION = perfection;
+	}
+
+	public void configureSmallMazes(double perfection){
+		setMazeDimensions(10, 15);
+		NAME = "Small Maze Tests";
 		NUM_TREASURES = 5;
 		PERFECTION = perfection;
 	}
@@ -107,8 +120,11 @@ public class MazeTest {
 		HEIGHT = height;
 	}
 
-	public void testWithParameters(PrintWriter writer) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+	public void printResult(String name, TestResult result, PrintWriter writer){
+		writer.println(name + "," + result.num_nodes + ", " + result.max_depth + ", " + result.branching_factor + ", " + result.num_steps + ", " + (result.succeeded ? "SUCCEEDED" : "FAILED") + ", " + 1);
+	}
 
+	public void testWithParameters(PrintWriter writer) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 		String prefix = "maze.heuristics";
 		AIReflector reflector = new AIReflector(BestFirstHeuristic.class, prefix);
 		ArrayList<String> names = reflector.getTypeNames();
