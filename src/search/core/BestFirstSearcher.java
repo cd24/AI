@@ -45,12 +45,7 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
     }
 
     private Queue<SearchNode> getOpenList(T target){
-        PriorityQueue<SearchNode> queue = new PriorityQueue<>(10, (n1, n2) -> {
-            int distanceN1 = h.getDistance(n1.getObject(), target);
-            int distanceN2 = h.getDistance(n2.getObject(), target);
-            return distanceN1 - distanceN2;
-        });
-
+        PriorityQueue<SearchNode> queue = new PriorityQueue<>();
         return queue;
     }
     
@@ -77,15 +72,16 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
         }
     }
     
-    private class SearchNode {
+    private class SearchNode implements Comparable<SearchNode> {
         private int depth;
-        private T node;
+        private T node, goal;
         private SearchNode parent;
         
         public SearchNode(SearchNode parent, T pNode, T goal) {
             node = pNode;
             this.parent = parent;
-            depth = (parent == null) ? 0 : parent.depth + 1; 
+            depth = (parent == null) ? 0 : parent.depth + 1;
+            this.goal = goal;
         }
         
         public int getDepth() {return depth;}
@@ -93,6 +89,11 @@ public class BestFirstSearcher<T extends BestFirstObject<T>> {
         public T getObject() {return node;}
         
         public SearchNode getParent() {return parent;}
+
+        @Override
+        public int compareTo(SearchNode o) {
+            return (depth + h.getDistance(node, goal)) - (o.depth + h.getDistance(o.node, goal));
+        }
     }
     
     private void reset() {

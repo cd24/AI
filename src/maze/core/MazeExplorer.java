@@ -16,8 +16,6 @@ public class MazeExplorer implements BestFirstObject<MazeExplorer> {
 		this.maze = m;
 		this.location = location;
 		treasureFound = new TreeSet<>();
-		if (maze.isTreasure(location))
-			this.treasureFound.add(location);
 	}
 	
 	public MazeCell getLocation() {return location;}
@@ -25,12 +23,14 @@ public class MazeExplorer implements BestFirstObject<MazeExplorer> {
 	@Override
 	public ArrayList<MazeExplorer> getSuccessors() {
 		ArrayList<MazeExplorer> result = new ArrayList<MazeExplorer>();
-		MazeExplorer explorer;
 		ArrayList<MazeCell> cells = maze.getNeighbors(this.location);
 		for (MazeCell cell : cells){
 			if (!maze.blocked(this.location, cell)){
-				explorer = new MazeExplorer(this.maze, cell);
+				MazeExplorer explorer = new MazeExplorer(this.maze, cell);
 				explorer.treasureFound.addAll(this.treasureFound);
+				if (maze.isTreasure(cell)) {
+					explorer.treasureFound.add(cell);
+				}
 				result.add(explorer);
 			}
 		}

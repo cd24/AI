@@ -16,7 +16,7 @@ import java.util.HashMap;
 public class MazeTest {
 	final static int NUM_TESTS = 100;
 	static int WIDTH = 10, HEIGHT = 15, NUM_TREASURES = 0;
-	static double PERFECTION = 50;
+	static double PERFECTION = 0.50;
 	static String NAME = "No Treasure Tests";
 	final static String homeDir = System.getProperty("user.home") + File.separator + "Desktop",
 			customFunctionPerformanceFile = "UserPerformanceResults.csv" ;
@@ -88,7 +88,7 @@ public class MazeTest {
 			testWithParameters(writer);
 		}
 
-		for (double i = 0.25; i < 1; i += 0.25){
+		for (double i = 0.25; i <= 1; i += 0.25){
 			configureSmallMazes(i);
 			testWithParameters(writer);
 		}
@@ -99,7 +99,7 @@ public class MazeTest {
 	public void configureTreasure(int num_treasures, boolean perfect){
 		NAME = "Treasure Tests";
 		NUM_TREASURES = num_treasures;
-		PERFECTION = perfect ? 100 : 50;
+		PERFECTION = perfect ? 1 : 0.50;
 	}
 
 	public void configurePerfections(double perfection){
@@ -202,7 +202,7 @@ public class MazeTest {
 	}
 
 	public static class TestResult {
-		public double num_nodes, max_depth, branching_factor, num_steps, completeness = 100;
+		public double num_nodes, max_depth, branching_factor, num_steps, completeness = 1;
 		public boolean succeeded = true;
 		public int treasure_count = 0;
 		String type = "No Treasure";
