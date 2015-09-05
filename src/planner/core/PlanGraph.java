@@ -25,8 +25,6 @@ public class PlanGraph {
 	}
 	
 	public Plan extractNoDeletePlan(State current) {
-		// Stub implementation.
-		return new NoDeletePlan();
 		
 		// TODO: Implement this method.
 		// Then, use a no-delete-plan as a heuristic estimate.
@@ -44,6 +42,29 @@ public class PlanGraph {
 		// - Create an empty NoDeletePlan.
 		// - Add every Action from the action list to this plan, unless the plan already 
 		//   contains that Action.
+
+		Queue<Predicate> predicates = new LinkedList<>();
+		predicates.addAll(current.unmetGoals(goals));
+		ArrayList<Action> currentActions = new ArrayList<>();
+		while (!predicates.isEmpty()){
+			Predicate curr = predicates.poll();
+			boolean isTrue = curr.isTrue();
+			if (!isTrue){
+				Action addedBy = firstAdders.get(curr);
+				currentActions.add(addedBy);
+				State preconditions = addedBy.getPreconditions();
+				for (Predicate predicate : preconditions.unmetGoals(current)){
+					predicates.add(predicate); //this allows duplicates... should it?
+				}
+			}
+		}
+
+		NoDeletePlan plan = new NoDeletePlan();
+		for (Action action: currentActions){
+			plan.appendAction(action);
+		}
+
+		return plan;
 	}
 	
 	public PlanGraph(Domain d, State current, Problem p) {
