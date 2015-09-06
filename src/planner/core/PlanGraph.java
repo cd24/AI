@@ -54,7 +54,7 @@ public class PlanGraph {
 				currentActions.add(0, addedBy);
 				State preconditions = addedBy.getPreconditions();
 				for (Predicate predicate : preconditions){
-					predicates.add(predicate); 
+					predicates.add(predicate);
 				}
 			}
 		}

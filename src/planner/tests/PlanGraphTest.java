@@ -1,7 +1,11 @@
-package planner.core;
+package planner.tests;
 
 import org.junit.Before;
 import org.junit.Test;
+import planner.core.Domain;
+import planner.core.Plan;
+import planner.core.PlanGraph;
+import planner.core.Problem;
 
 import java.io.File;
 

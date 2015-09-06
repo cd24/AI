@@ -1,7 +1,9 @@
-package planner.core;
+package planner.tests;
 
 import org.junit.Test;
+import planner.core.*;
 import planner.heuristics.BreadthFirst;
+import planner.tests.PlanGraphTest;
 import search.core.BestFirstHeuristic;
 
 import java.io.File;
