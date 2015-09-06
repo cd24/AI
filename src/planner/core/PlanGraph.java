@@ -44,20 +44,18 @@ public class PlanGraph {
 		//   contains that Action.
 
 		Queue<Predicate> predicates = new LinkedList<>();
-		predicates.addAll(goals.unmetGoals(current));
+		predicates.addAll(current.unmetGoals(goals));
 		ArrayList<Action> currentActions = new ArrayList<>();
 		while (!predicates.isEmpty()){
 			Predicate curr = predicates.poll();
-			boolean isTrue = goals.predIsTrue(curr);
+			boolean isTrue = current.predIsTrue(curr);
 			if (!isTrue){
 				Action addedBy = firstAdders.get(curr);
 				currentActions.add(addedBy);
 				State preconditions = addedBy.getPreconditions();
-				Set<Predicate> conditions = preconditions.unmetGoals(current);
-				for (Predicate predicate : conditions){
+				for (Predicate predicate : preconditions){
 					predicates.add(predicate); //this allows duplicates... should it?
 				}
-				goals = new State(goals);
 			}
 		}
 
