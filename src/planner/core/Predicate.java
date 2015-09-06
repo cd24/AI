@@ -54,7 +54,6 @@ public class Predicate implements Comparable<Predicate> {
 		result.negated = !negated;
 		return result;
 	}
-
 	// Pre: None
 	// Post: Returns true if this and other have the same name, same
 	//       parameters, but different truth values.  Returns false otherwise.
