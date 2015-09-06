@@ -28,6 +28,7 @@ public class UserTests {
     @Test
     public void testUserHeuristics() throws ClassNotFoundException, IllegalAccessException, InstantiationException, FileNotFoundException, UnsupportedEncodingException {
         String prefix = "planner.heuristics";
+        double percent_complete = 0.0;
         AIReflector<BestFirstHeuristic<PlanStep>> reflector = new AIReflector<>(BestFirstHeuristic.class, prefix);
         HashMap<String, ArrayList<Result>> results = new HashMap<>();
         String raw_file = SAVE_LOCATION + File.separator + INDIVIDUAL_RUNS,
@@ -35,11 +36,14 @@ public class UserTests {
         PrintWriter raw_writer = new PrintWriter(raw_file, "UTF-8"), aggregated_writer = new PrintWriter(aggregated_file, "UTF-8");
         String[] simpleFiles = getTestFiles(true);
         String[] toughFiles = getProblemFiles(false);
-
-        for (String name : reflector.getTypeNames()){
+        ArrayList<String> names = reflector.getTypeNames();
+        for (String name : names){
             String qualifiedName = prefix + "." + name;
-            for (String test_file : simpleFiles){
+            for (int i = 0; i < simpleFiles.length; ++i){
+                String test_file = simpleFiles[i];
                 performSimpleTest(qualifiedName, results, test_file);
+                percent_complete += 1.0 / (names.size() * simpleFiles.length);
+                System.out.print((percent_complete * 100) + "% complete\r");
             }
         }
 
@@ -99,11 +103,11 @@ public class UserTests {
 
         for (String test : orderedResults.keySet()){
             HashMap<String, Result> heuristicResults = orderedResults.get(test);
-            String header = test + ", number of nodes, depth, b*, length, duration, simple?";
+            String header = test + ", number of nodes, depth, b*, length, duration (MS), simple?";
             raw_writer.println(header);
             for (String heuristic : heuristicResults.keySet()){
                 Result result = heuristicResults.get(heuristic);
-                String line = heuristic + ", " +
+                String line = heuristic.split(".")[2] + ", " +
                         result.num_nodes + ", " +
                         result.max_depth + ", " +
                         result.branching_factor + ", " +
