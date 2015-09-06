@@ -74,8 +74,9 @@ public class MazeTest {
 
 	@Test
 	public void testUserDefined() throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
+		System.out.println("This test will take ~30 minutes to run.\nBe prepared to wait, or reduced the maze dimension using the helper function included on line 79 of MazeTest.java.");
 		PrintWriter writer = new PrintWriter(homeDir + File.separator + customFunctionPerformanceFile, "UTF-8");
-		setMazeDimensions(250, 250);
+		setMazeDimensions(100, 100);
 		testWithParameters(writer);
 
 		for (double i = 0.25; i <= 1; i += 0.25){
@@ -104,7 +105,7 @@ public class MazeTest {
 
 	public void configurePerfections(double perfection){
 		NAME = "Perfection Test";
-		NUM_TREASURES = 50;
+		NUM_TREASURES = 5;
 		PERFECTION = perfection;
 	}
 
@@ -128,9 +129,8 @@ public class MazeTest {
 		String prefix = "maze.heuristics";
 		AIReflector reflector = new AIReflector(BestFirstHeuristic.class, prefix);
 		ArrayList<String> names = reflector.getTypeNames();
-
+		Maze m = new Maze(WIDTH, HEIGHT);
 		for (int i = 0; i < NUM_TESTS; ++i) {
-			Maze m = new Maze(WIDTH, HEIGHT);
 			m.makeMaze(new MazeCell(m.getXMax(), m.getYMin()),
 					new MazeCell(m.getXMin(), m.getYMax()),
 					NUM_TREASURES,
@@ -149,7 +149,6 @@ public class MazeTest {
 	}
 
 	public void testUserHeuristic(BestFirstHeuristic hr, ArrayList<TestResult> res, Maze m) throws IOException {
-		m.makeMaze(new MazeCell(0, 0), new MazeCell(WIDTH - 1, HEIGHT - 1), 0, 1);
 		BestFirstSearcher<MazeExplorer> bestFirst = new BestFirstSearcher<>(hr);
 		MazeExplorer startNode = new MazeExplorer(m, m.getStart());
 		MazeExplorer endNode = new MazeExplorer(m, m.getEnd());
@@ -164,6 +163,7 @@ public class MazeTest {
 		else{
 			res.add(new TestResult(false));
 		}
+		System.gc();
 	}
 
 	public void writeResultsToFile(PrintWriter writer){

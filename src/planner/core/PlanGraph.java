@@ -51,10 +51,10 @@ public class PlanGraph {
 			boolean isTrue = current.predIsTrue(curr);
 			if (!isTrue){
 				Action addedBy = firstAdders.get(curr);
-				currentActions.add(addedBy);
+				currentActions.add(0, addedBy);
 				State preconditions = addedBy.getPreconditions();
 				for (Predicate predicate : preconditions){
-					predicates.add(predicate); //this allows duplicates... should it?
+					predicates.add(predicate); 
 				}
 			}
 		}
