@@ -15,20 +15,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
-/**
- * Created by John on 9/6/2015.
- */
 public class UserTests {
 
     public static final String INDIVIDUAL_RUNS = "raw_data.csv",
             AGGREGATED = "user_heuristics.csv",
             SAVE_LOCATION = System.getProperty("user.home") + File.separator + "Desktop";
-    public static final int NUM_TESTS = 100;
+    public static final boolean LONG_RUN = false;
 
     @Test
     public void testUserHeuristics() throws ClassNotFoundException, IllegalAccessException, InstantiationException, FileNotFoundException, UnsupportedEncodingException {
         String prefix = "planner.heuristics";
-        double percent_complete = 0.0;
         AIReflector<BestFirstHeuristic<PlanStep>> reflector = new AIReflector<>(BestFirstHeuristic.class, prefix);
         HashMap<String, ArrayList<Result>> results = new HashMap<>();
         String raw_file = SAVE_LOCATION + File.separator + INDIVIDUAL_RUNS,
@@ -37,13 +33,18 @@ public class UserTests {
         String[] simpleFiles = getTestFiles(true);
         String[] toughFiles = getProblemFiles(false);
         ArrayList<String> names = reflector.getTypeNames();
+        if (LONG_RUN){
+            System.out.println("Running with all possible tests.  This could take several hours and will fill no less than 6 gb of memory.");
+        }
         for (String name : names){
             String qualifiedName = prefix + "." + name;
-            for (int i = 0; i < simpleFiles.length; ++i){
+            System.out.println("Currently working on: " + name);
+            int numTests = LONG_RUN ? simpleFiles.length : 13;
+            for (int i = 0; i < numTests; ++i){
                 String test_file = simpleFiles[i];
+                System.out.println("\tWorking on test: " + test_file);
                 performSimpleTest(qualifiedName, results, test_file);
-                percent_complete += 1.0 / (names.size() * simpleFiles.length);
-                System.out.print((percent_complete * 100) + "% complete\r");
+                System.gc();
             }
         }
 
@@ -73,6 +74,8 @@ public class UserTests {
         total_time = System.currentTimeMillis() - testStart;
 
         Result result = new Result(planner.getNumNodes(), planner.getMaxDepth(), planner.getBranchingFactor(), p.length());
+        result.succeeded = p.isPlanValid(problem);
+
         result.wasSimple = true;
         result.duration = total_time;
         String[] seperatedPath = test_file.split(Pattern.quote(File.separator));
@@ -85,7 +88,9 @@ public class UserTests {
     }
 
     public String getDomain(boolean simple){
-        return simple ? PlanGraphTest.path2String("domains", "blocks", "domain.pddl") : PlanGraphTest.path2String("domains", "blocks2", "domain.pddl");
+        return simple ?
+                PlanGraphTest.path2String("domains", "blocks", "domain.pddl") :
+                PlanGraphTest.path2String("domains", "blocks2", "domain.pddl");
     }
 
     public void writeRawData(PrintWriter raw_writer, HashMap<String, ArrayList<Result>> data){
@@ -103,19 +108,28 @@ public class UserTests {
 
         for (String test : orderedResults.keySet()){
             HashMap<String, Result> heuristicResults = orderedResults.get(test);
-            String header = test + ", number of nodes, depth, b*, length, duration (MS), simple?";
+            String header = test + ", nodes, depth, b*, length, duration (MS), MS/Node Expansion, simple?";
             raw_writer.println(header);
             for (String heuristic : heuristicResults.keySet()){
                 Result result = heuristicResults.get(heuristic);
-                String line = heuristic.split(".")[2] + ", " +
-                        result.num_nodes + ", " +
-                        result.max_depth + ", " +
-                        result.branching_factor + ", " +
-                        result.num_steps + ", " +
-                        result.duration + ", " +
-                        result.wasSimple;
+                String line;
+                if (result.succeeded) {
+                    line = heuristic.split("\\.")[2] + ", " +
+                            result.num_nodes + ", " +
+                            result.max_depth + ", " +
+                            result.branching_factor + ", " +
+                            result.num_steps + ", " +
+                            result.duration + ", " +
+                            (result.duration / result.num_nodes) + ", " +
+                            result.wasSimple;
+                }
+                else {
+                    line = heuristic.split("\\.")[2] + ", PRODUCED INVALID SOLUTION";
+                }
+
                 raw_writer.println(line);
             }
+            raw_writer.println("");
         }
     }
 
@@ -159,7 +173,13 @@ public class UserTests {
                         "probBLOCKS-16-2",
                         "probBLOCKS-17-0"
                 } :
-                new String[] {};
+                new String[] { // returns a small set, because these each take a year and a half to run (exaggeration), but feel free to add more.
+                        "probblocks-17-1",
+                        "probblocks-18-0",
+                        "probblocks-18-1",
+                        "probblocks-19-0",
+                        "probblocks-19-1"
+                };
     }
 
     public class Result extends MazeTest.TestResult{
