@@ -6,12 +6,14 @@ import org.junit.Test;
 import planner.core.*;
 import search.core.BestFirstHeuristic;
 
+import javax.swing.text.Style;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.SynchronousQueue;
 import java.util.regex.Pattern;
 
 public class UserTests {
@@ -25,6 +27,7 @@ public class UserTests {
 
     @Test
     public void testUserHeuristics() throws ClassNotFoundException, IllegalAccessException, InstantiationException, FileNotFoundException, UnsupportedEncodingException {
+        double start_time = System.currentTimeMillis(), end_time;
         String prefix = "planner.heuristics";
         AIReflector<BestFirstHeuristic<PlanStep>> reflector = new AIReflector<>(BestFirstHeuristic.class, prefix);
         HashMap<String, ArrayList<Result>> results = new HashMap<>();
@@ -33,16 +36,17 @@ public class UserTests {
         PrintWriter raw_writer = new PrintWriter(raw_file, "UTF-8"), aggregated_writer = new PrintWriter(aggregated_file, "UTF-8");
         String[] simpleFiles = getTestFiles(true);
         String[] toughFiles = getProblemFiles(false);
+        String[] files = LONG_RUN ? toughFiles : simpleFiles;
         ArrayList<String> names = reflector.getTypeNames();
         if (LONG_RUN){
-            System.out.println("Running with all possible tests.  This could take several hours and will fill no less than 6 gb of memory.");
+            System.out.println("Running with all possible tests.  This could take several hours and will fill no less than 4 gb of memory.");
         }
         for (String name : names){
             String qualifiedName = prefix + "." + name;
             System.out.println("Currently working on: " + name);
-            int numTests = LONG_RUN ? simpleFiles.length : 13;
+            int numTests = LONG_RUN ? 5 : 13;
             for (int i = 0; i < numTests; ++i){
-                String test_file = simpleFiles[i];
+                String test_file = files[i];
                 System.out.println("\tWorking on test: " + test_file);
                 performSimpleTest(qualifiedName, results, test_file);
                 System.gc();
@@ -52,6 +56,8 @@ public class UserTests {
         writeRawData(raw_writer, results);
         raw_writer.close();
         aggregated_writer.close();
+        end_time = System.currentTimeMillis();
+        System.out.println("Total run time (MS): " + (end_time - start_time));
     }
 
     public String[] getTestFiles(boolean simple){
@@ -123,8 +129,34 @@ public class UserTests {
                 orderedResults.get(test_name).put(key, result);
             }
         }
+        Set<String> keys = orderedResults.keySet();
+        Comparator<String> comparator = new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                String[] s1components = o1.split("\\-");
+                String[] s2components = o2.split("\\-");
+                Integer o1_1 = Integer.parseInt(s1components[1]), o1_2 = Integer.parseInt(s1components[2].substring(0, 1)),
+                        o2_1 = Integer.parseInt(s2components[1]), o2_2 = Integer.parseInt(s2components[2].substring(0, 1));
+                if (o1_1 > o2_1) {
+                    return 1;
+                }
+                if (o1_1 > o2_1 && o1_2 > o2_2) {
+                    return 1;
+                }
+                if (o1_1 < o2_1) {
+                    return 1;
+                }
+                if (o1_1 < o2_1 && o1_2 < o2_2) {
+                    return 1;
+                }
+                return 0;
+            }
+        };
+        ArrayList<String> keylist = new ArrayList<String>();
+        keylist.addAll(keys);
+        Collections.sort(keylist, comparator);
 
-        for (String test : orderedResults.keySet()){
+        for (String test : keylist){
             HashMap<String, Result> heuristicResults = orderedResults.get(test);
             String header = test + ", nodes, depth, b*, length, duration (MS), MS/Node Expansion, simple?";
             raw_writer.println(header);
