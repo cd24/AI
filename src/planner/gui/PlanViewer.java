@@ -125,8 +125,8 @@ public class PlanViewer extends JFrame {
 	}
 	
 	private void populateProblems() throws FileNotFoundException {
-		refreshProblems();
 		refreshDomain();
+		refreshProblems();
 	}
 	
 	private File getDomainDir() {
@@ -152,6 +152,7 @@ public class PlanViewer extends JFrame {
 	private void refreshProblems() {
 		problems.removeAllItems();
 		File problemDir = getDomainDir();
+		System.out.print("");
 		for (File problem: problemDir.listFiles()) {
 			if (problem.toString().endsWith(".pddl") && !problem.toString().endsWith("domain.pddl")) {
 				int start = problem.toString().lastIndexOf(File.separatorChar) + 1;
