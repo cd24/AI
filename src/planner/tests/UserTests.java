@@ -6,7 +6,6 @@ import org.junit.Test;
 import planner.core.*;
 import search.core.BestFirstHeuristic;
 
-import javax.swing.text.Style;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -21,6 +20,8 @@ public class UserTests {
             AGGREGATED = "user_heuristics.csv",
             SAVE_LOCATION = System.getProperty("user.home") + File.separator + "Desktop";
     public static final boolean LONG_RUN = false;
+    public static Plan p;
+    public static long max_run_time = 60000;//ms
 
     @Test
     public void testUserHeuristics() throws ClassNotFoundException, IllegalAccessException, InstantiationException, FileNotFoundException, UnsupportedEncodingException {
@@ -70,11 +71,28 @@ public class UserTests {
         BestFirstPlanner planner = new BestFirstPlanner(heuristic);
         Problem problem = new Problem(new File(test_file));
         long testStart = System.currentTimeMillis(), total_time;
-        Plan p = planner.makePlan(domain, problem);
+
+        Thread planThread = new Thread(() -> {
+            UserTests.p = planner.makePlan(domain, problem);
+        });
+        planThread.run();
+        boolean killed = false;
+        while(planThread.isAlive()){
+            if (System.currentTimeMillis() - testStart >= max_run_time){
+                planThread.interrupt();
+                killed = true;
+            }
+        }
         total_time = System.currentTimeMillis() - testStart;
 
         Result result = new Result(planner.getNumNodes(), planner.getMaxDepth(), planner.getBranchingFactor(), p.length());
         result.succeeded = p.isPlanValid(problem);
+        if (!result.succeeded){
+            if (killed)
+                result.error = "TIMED OUT";
+            else
+                result.error = "BAD SOLUTION";
+        }
 
         result.wasSimple = true;
         result.duration = total_time;
@@ -124,7 +142,7 @@ public class UserTests {
                             result.wasSimple;
                 }
                 else {
-                    line = heuristic.split("\\.")[2] + ", PRODUCED INVALID SOLUTION";
+                    line = heuristic.split("\\.")[2] + result.error;
                 }
 
                 raw_writer.println(line);
@@ -185,7 +203,7 @@ public class UserTests {
     public class Result extends MazeTest.TestResult{
         public double duration;
         public boolean wasSimple;
-        String test_name;
+        String test_name, error;
         public Result(double nodes, double depth, double branching_factor, double num_steps) {
             super(nodes, depth, branching_factor, num_steps);
         }
