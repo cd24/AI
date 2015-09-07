@@ -25,24 +25,6 @@ public class PlanGraph {
 	}
 	
 	public Plan extractNoDeletePlan(State current) {
-		
-		// TODO: Implement this method.
-		// Then, use a no-delete-plan as a heuristic estimate.
-		
-		// To implement this method:
-		// - Create a collection of predicates.  Initialize it with the goals.
-		// - Create an empty list of actions.  (This will ultimately be the plan.)
-		// - Loop as long as there are predicates in that collection.
-		//   - On each loop iteration:
-		//     - Pick a predicate and remove it from the collection.
-		//     - If the predicate is not already true, use the firstAdders
-		//       object to find the first Action that added it.
-		//     - Add that Action to the start of your list of actions.
-		//     - Add all of the Action's preconditions to the collection of predicates.
-		// - Create an empty NoDeletePlan.
-		// - Add every Action from the action list to this plan, unless the plan already 
-		//   contains that Action.
-
 		Queue<Predicate> predicates = new LinkedList<>();
 		predicates.addAll(current.unmetGoals(goals));
 		ArrayList<Action> currentActions = new ArrayList<>();
@@ -68,12 +50,12 @@ public class PlanGraph {
 	}
 	
 	public PlanGraph(Domain d, State current, Problem p) {
-		used = new HashSet<Action>();
+		used = new HashSet<>();
 		
 		start = current;
 		goals = p.getGoals();
-		actions = new ArrayList<ArrayList<Action>>();
-		firstAdders = new HashMap<Predicate,Action>();
+		actions = new ArrayList<>();
+		firstAdders = new HashMap<>();
 		while (!current.allGoalsMet(goals)) {
 			State prev = current;
 			current = addNewLevel(current, d);
