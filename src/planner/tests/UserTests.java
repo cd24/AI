@@ -6,14 +6,11 @@ import org.junit.Test;
 import planner.core.*;
 import search.core.BestFirstHeuristic;
 
-import javax.swing.text.Style;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.SynchronousQueue;
 import java.util.regex.Pattern;
 
 public class UserTests {
@@ -44,7 +41,7 @@ public class UserTests {
         for (String name : names){
             String qualifiedName = prefix + "." + name;
             System.out.println("Currently working on: " + name);
-            int numTests = LONG_RUN ? 5 : 13;
+            int numTests = LONG_RUN ? toughFiles.length : simpleFiles.length;
             for (int i = 0; i < numTests; ++i){
                 String test_file = files[i];
                 System.out.println("\tWorking on test: " + test_file);

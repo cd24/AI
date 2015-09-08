@@ -27,13 +27,13 @@ public class PlanGraph {
 	public Plan extractNoDeletePlan(State current) {
 		Queue<Predicate> predicates = new LinkedList<>();
 		predicates.addAll(current.unmetGoals(goals));
-		ArrayList<Action> currentActions = new ArrayList<>();
+		LinkedList<Action> currentActions = new LinkedList<>();
 		while (!predicates.isEmpty()){
 			Predicate curr = predicates.poll();
 			boolean isTrue = current.predIsTrue(curr);
 			if (!isTrue){
 				Action addedBy = firstAdders.get(curr);
-				currentActions.add(0, addedBy);
+				currentActions.addFirst(addedBy);
 				State preconditions = addedBy.getPreconditions();
 				for (Predicate predicate : preconditions){
 					predicates.add(predicate);
