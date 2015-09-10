@@ -31,7 +31,7 @@ public class PlanGraph {
 		while (!predicates.isEmpty()){
 			Predicate curr = predicates.poll();
 			boolean isTrue = current.predIsTrue(curr);
-			if (!isTrue){
+			if (!isTrue && firstAdders.containsKey(curr)){
 				Action addedBy = firstAdders.get(curr);
 				currentActions.addFirst(addedBy);
 				State preconditions = addedBy.getPreconditions();
