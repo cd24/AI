@@ -1,3 +1,4 @@
+; Hardest Problem
 (define (problem TAXI-1)
 	(:domain TAXI)
 	(:objects TAXI P1 P2 P3 A B C D E F G H I J K L M N O P Q R S T)

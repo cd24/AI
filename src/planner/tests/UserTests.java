@@ -20,7 +20,7 @@ public class UserTests {
             SAVE_LOCATION = System.getProperty("user.home") + File.separator + "Desktop";
     public static final boolean LONG_RUN = false;
     public static Plan p;
-    public static long max_run_time = 60000;//ms
+    public static long max_run_time = 60;//ms
 
     @Test
     public void testUserHeuristics() throws ClassNotFoundException, IllegalAccessException, InstantiationException, FileNotFoundException, UnsupportedEncodingException {
@@ -41,7 +41,7 @@ public class UserTests {
         for (String name : names){
             String qualifiedName = prefix + "." + name;
             System.out.println("Currently working on: " + name);
-            int numTests = LONG_RUN ? toughFiles.length : simpleFiles.length;
+            int numTests = LONG_RUN ? toughFiles.length : 10;
             for (int i = 0; i < numTests; ++i){
                 String test_file = files[i];
                 System.out.println("\tWorking on test: " + test_file);
