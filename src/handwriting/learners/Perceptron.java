@@ -1,7 +1,5 @@
 package handwriting.learners;
 
-import java.util.ArrayList;
-
 public class Perceptron extends PerceptronNet {
     // First index is the input; second index is the output
     private double[][] weights;
@@ -88,19 +86,13 @@ public class Perceptron extends PerceptronNet {
     public double[] compute(double[] inputs) {
     	checkCompute(inputs);
         for (int output = 0; output < outputs.length; ++output){
-            ArrayList<Double> out = new ArrayList<>();
             for (int input = 0; input < inputs.length; ++input){
                 double weight = weights[input][output];
-                if (weight == 0) {
-                    continue;
-                }
-               out.add(inputs[input] * weight);
+                outputs[output] += weight * inputs[input];
             }
-            double sum = 0.0;
-            for (Double value : out){
-                sum += value;
-            }
-            outputs[output] = sigmoid(sum) >= threshold() ? 1 : 0;
+            double sum = outputs[output];
+            sum -= weights[threshold()][output];
+            outputs[output] = sigmoid(sum);
         }
 
         return outputs;
@@ -110,11 +102,15 @@ public class Perceptron extends PerceptronNet {
     // It accumulates the deltas to reflect the recently computed errors
     public void addToWeightDeltas(double[] inputs, double rate) {
         compute(inputs);
-        for (int output = 0; output < outputs.length; ++output){
-            for (int input = 0; input < inputs.length; ++input){
-                double error = errors[output];
-                deltas[input][output] += error * rate;
+        for (int out = 0; out < outputs.length; ++out){
+            double output = outputs[out];
+            double error = errors[out];
+            double gradient = gradient(output);
+            for (int in = 0; in < inputs.length; ++in){
+                double input = inputs[in];
+                deltas[in][out] += input * error * rate * gradient;
             }
+            deltas[threshold()][out] -= error * rate * gradient;
         }
     }
     

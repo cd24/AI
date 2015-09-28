@@ -38,7 +38,18 @@ public class MultiLayer extends PerceptronNet {
            Then call inputToHidden.setError() and inputToHidden.addToWeightDeltas()
            to store the errors.
          */
-
+        for (int hidex = 0; hidex < hiddenToOutput.numInputNodes(); ++hidex) {
+            double totalError = 0.0;
+            double gradient = gradient(inputToHidden.output(hidex));
+            double input = inputToHidden.output(hidex);
+            for (int out = 0; out < hiddenToOutput.numOutputNodes(); ++out) {
+                double weight = hiddenToOutput.getWeightFromTo(hidex, out);
+                double error = hiddenToOutput.error(out);
+                totalError += weight * gradient * error * input;
+            }
+            inputToHidden.setError(hidex, totalError);
+            inputToHidden.addToWeightDeltas(inputs, rate);
+        }
     }
 
     public void train(double[] inputs, double[] targets, double rate) {
