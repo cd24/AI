@@ -1,6 +1,8 @@
 package handwriting.core;
 
 
+import search.core.Duple;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -63,13 +65,13 @@ public class SampleData {
 		return labelToDrawing.get(label).get(index);
 	}
 	
-	public String getLabelFor(int index) {
+	public Duple<String,Drawing> getLabelAndDrawing(int index) {
 		if (index < 0 || index >= numDrawings()) {
 			throw new IndexOutOfBoundsException(index + " > numDrawings(): " + numDrawings());
 		}
 		for (String label: allLabels()) {
 			if (index < numDrawingsFor(label)) {
-				return label;
+				return new Duple<>(label, getDrawing(label, index));
 			} else {
 				index -= numDrawingsFor(label);
 			}
@@ -77,18 +79,12 @@ public class SampleData {
 		throw new IllegalStateException("This should never happen");
 	}
 	
+	public String getLabelFor(int index) {
+		return getLabelAndDrawing(index).getFirst();
+	}
+	
 	public Drawing getDrawing(int index) {
-		if (index < 0 || index >= numDrawings()) {
-			throw new IndexOutOfBoundsException(index + " > numDrawings(): " + numDrawings());
-		}
-		for (String label: allLabels()) {
-			if (index < numDrawingsFor(label)) {
-				return getDrawing(label, index);
-			} else {
-				index -= numDrawingsFor(label);
-			}
-		}
-		throw new IllegalStateException("This should never happen");
+		return getLabelAndDrawing(index).getSecond();
 	}
 	
 	public Set<String> allLabels() {

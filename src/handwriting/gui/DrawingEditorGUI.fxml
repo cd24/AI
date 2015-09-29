@@ -20,8 +20,8 @@
             </MenuBar>
             <HBox BorderPane.alignment="CENTER">
                <children>
+                  <Button fx:id="clear" mnemonicParsing="false" text="Clear" />
                   <Button fx:id="drawErase" mnemonicParsing="false" text="Draw" />
-                  <Button fx:id="lookup" mnemonicParsing="false" text="Lookup" />
                   <Label text="Label" />
                   <ChoiceBox fx:id="labelChoice" />
                   <Label text="Index" />
@@ -43,12 +43,22 @@
       <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
-      <HBox BorderPane.alignment="CENTER">
+      <VBox>
          <children>
-            <Button fx:id="train" mnemonicParsing="false" text="Train" />
-            <ChoiceBox fx:id="algorithmChoice" />
-            <ProgressBar fx:id="trainingProgress" progress="0.0" />
+            <HBox BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="train" mnemonicParsing="false" text="Train" />
+                  <ChoiceBox fx:id="algorithmChoice" />
+                  <ProgressBar fx:id="trainingProgress" progress="0.0" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Button fx:id="testAll" mnemonicParsing="false" text="Test all" />
+                  <TextField fx:id="testResults" />
+               </children>
+            </HBox>
          </children>
-      </HBox>
+      </VBox>
    </bottom>
 </BorderPane>

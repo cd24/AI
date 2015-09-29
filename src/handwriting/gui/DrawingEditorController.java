@@ -3,27 +3,31 @@ package handwriting.gui;
 import handwriting.core.Drawing;
 import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import search.core.AIReflector;
+import search.core.Duple;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class DrawingEditorController {
-	public final static int DRAWING_WIDTH = 40, DRAWING_HEIGHT = 40;
+	@FXML
+	Button clear;
 	
 	@FXML
 	Button record;
 	
 	@FXML
 	Button drawErase;
-	
-	@FXML
-	Button lookup;
 	
 	@FXML
 	Button classify;
@@ -58,6 +62,12 @@ public class DrawingEditorController {
 	@FXML
 	MenuItem saveData;
 	
+	@FXML
+	Button testAll;
+	
+	@FXML
+	TextField testResults;
+	
 	RecognizerAI trainer;
 	
 	SampleData drawings;
@@ -68,20 +78,24 @@ public class DrawingEditorController {
 	
 	AIReflector<RecognizerAI> ais;
 	
+	public final static int DRAWING_WIDTH = 40, DRAWING_HEIGHT = 40;
+	
 	@FXML
 	void initialize() {
 		setupVars();
 		setupMenus();
 		setupButtons();
 		setupCanvas();
+		setupChoiceBoxes();
+		trainingProgress.setProgress(1.0);
 	}
 	
 	void setupVars() {
+		sketch = new Drawing(DRAWING_WIDTH, DRAWING_HEIGHT);
 		newData();
 		setupDrawErase();
 		setupDefaultTrainer();
 		findTrainers();	
-		resetSketch();
 	}
 	
 	void setupDefaultTrainer() {
@@ -90,10 +104,6 @@ public class DrawingEditorController {
 			public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {}
 			@Override
 			public String classify(Drawing d) {return "Unknown";}};
-	}
-	
-	void resetSketch() {
-		sketch = new Drawing(DRAWING_WIDTH, DRAWING_HEIGHT);
 	}
 	
 	void setupDrawErase() {
@@ -111,10 +121,29 @@ public class DrawingEditorController {
 	
 	void newData() {
 		drawings = new SampleData();
+		labelChoice.getItems().clear();
+		drawingChoice.getItems().clear();
 	}
 	
 	void setupMenus() {
 		newData.setOnAction(event -> newData());
+		openData.setOnAction(event -> openDataFile());
+		saveData.setOnAction(event -> saveDataFile());
+	}
+	
+	void saveDataFile() {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Select test data");
+		File savee = chooser.showSaveDialog(null);
+		if (savee != null) {
+			try {
+				PrintWriter out = new PrintWriter(savee);
+				out.println(drawings.toString());
+				out.close();
+			} catch (FileNotFoundException e) {
+				oops(e);
+			}
+		}
 	}
 	
 	void findTrainers() {
@@ -129,14 +158,30 @@ public class DrawingEditorController {
 	
 	void setupButtons() {
 		setupRecord();
-		
 		setupTrain();
-		
-		lookup.setOnAction(event -> 
-			sketch = drawings.getDrawing(getCurrentLabel(), getCurrentDrawing()));
-		
+		setupTest();
+
 		classify.setOnAction(event -> 
 			recordingClassificationLabel.setText(trainer.classify(sketch)));
+		
+		clear.setOnAction(event -> clearCanvas());
+	}
+	
+	void setupChoiceBoxes() {
+		labelChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> resetDrawingList());
+
+		drawingChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> {
+			int choice = vNew.intValue();
+			if (choice >= 0) {
+				clearCanvas();
+				sketch = drawings.getDrawing(getCurrentLabel(), vNew.intValue());
+				for (int x = 0; x < sketch.getWidth(); x++) {
+					for (int y = 0; y < sketch.getHeight(); y++) {
+						if (sketch.isSet(x, y)) plot(x, y);
+					}
+				}
+			}
+		});		
 	}
 	
 	void setupRecord() {
@@ -144,17 +189,26 @@ public class DrawingEditorController {
 			String label = recordingClassificationLabel.getText();
 			if (label.length() > 0) {
 				addSample(label, sketch);
-				resetSketch();
+				clearCanvas();
 			} else {
-				Alert popup = new Alert(AlertType.ERROR);
-				popup.setContentText("No label specified");
-				popup.show();
+				info("No label specified");
 			}
 		});		
 	}
 	
 	void setupTrain() {
 		ArrayBlockingQueue<Double> progress = new ArrayBlockingQueue<>(2);
+		startProgressThread(progress);
+		
+		train.setOnAction(event -> {
+			testResults.setText("");
+			ArrayBlockingQueue<RecognizerAI> result = new ArrayBlockingQueue<>(1);
+			startTrainingDoneThread(result);
+			startTrainingThread(progress, result);
+		});		
+	}
+	
+	void startProgressThread(ArrayBlockingQueue<Double> progress) {
 		new Thread(() -> {
 			double prog = 0;
 			for (;;) {
@@ -162,29 +216,88 @@ public class DrawingEditorController {
 				try {
 					prog = progress.take();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Platform.runLater(() -> oops(e));
 				}
 			}
-		}).start();
-		
-		train.setOnAction(event -> {
-			ArrayBlockingQueue<RecognizerAI> result = new ArrayBlockingQueue<>(1);
-
-			new Thread(() -> {try {trainer = result.take();} catch (Exception e) {}}).start();
-			
-			new Thread(() -> {
+		}).start();		
+	}
+	
+	void startTrainingDoneThread(ArrayBlockingQueue<RecognizerAI> result) {
+		new Thread(() -> {
+			try {trainer = result.take();} 
+			catch (Exception e) {}
+			Platform.runLater(() -> info("Training finished"));
+		}).start();		
+	}
+	
+	void startTrainingThread(ArrayBlockingQueue<Double> progress, ArrayBlockingQueue<RecognizerAI> result) {
+		new Thread(() -> {
+			try {
+				progress.put(0.0);
+				RecognizerAI created = ais.newInstanceOf(algorithmChoice.getSelectionModel().getSelectedItem());
+				created.train(drawings, progress);
+				result.put(created);
+			} catch (Exception e) {
+				Platform.runLater(() -> oops(e));
+			}				
+		}).start();		
+	}
+	
+	void setupTest() {
+		testAll.setOnAction(event -> {
+			testResults.setText("");
+			File testFile = getDataFile();
+			if (testFile != null) {
 				try {
-					progress.put(0.0);
-					RecognizerAI created = ais.newInstanceOf(algorithmChoice.getSelectionModel().getSelectedItem());
-					created.train(drawings, progress);
-					result.put(created);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}				
-			}).start();
-		});		
+					runTests(SampleData.parseDataFrom(testFile));
+				} catch (FileNotFoundException e) {
+					oops(e);
+				}
+			}
+		});
+	}
+	
+	void runTests(SampleData testData) {
+		int numCorrect = 0;
+		for (int i = 0; i < testData.numDrawings(); i++) {
+			Duple<String,Drawing> test = testData.getLabelAndDrawing(i);
+			if (trainer.classify(test.getSecond()).equals(test.getFirst())) {
+				numCorrect += 1;
+			}
+		}
+		double percent = 100.0 * numCorrect / testData.numDrawings();
+		testResults.setText(String.format("%d/%d (%4.2f%%) correct", numCorrect, testData.numDrawings(), percent));		
+	}
+	
+	void oops(Exception exc) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setContentText(exc.getMessage());
+		alert.show();
+	}
+	
+	void info(String s) {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setContentText(s);
+		alert.show();
+	}
+	
+	void openDataFile() {
+		File dataFile = getDataFile();
+		if (dataFile != null) {
+			try {
+				drawings = SampleData.parseDataFrom(dataFile);
+				resetLabels();
+				clearCanvas();
+			} catch (FileNotFoundException e) {
+				oops(e);
+			}
+		}
+	}
+	
+	File getDataFile() {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Select test data");
+		return chooser.showOpenDialog(null);
 	}
 	
 	void addSample(String label, Drawing sample) {
@@ -193,6 +306,16 @@ public class DrawingEditorController {
 			labelChoice.getItems().add(label);
 		}
 		labelChoice.getSelectionModel().select(label);
+		resetDrawingList();
+	}
+	
+	void resetLabels() {
+		labelChoice.getItems().clear();
+		for (String label: drawings.allLabels()) {
+			labelChoice.getItems().add(label);
+		}
+		if (labelChoice.getItems().size() > 0)
+			labelChoice.getSelectionModel().select(0);
 		resetDrawingList();
 	}
 	
@@ -211,10 +334,15 @@ public class DrawingEditorController {
 		return drawingChoice.getSelectionModel().getSelectedItem();
 	}
 	
-	void setupCanvas() {
+	void clearCanvas() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		sketch.clear();
+	}
+	
+	void setupCanvas() {
+		clearCanvas();
 		
 		canvas.setOnMouseDragged(mouse -> {
 			int xGrid = (int)(mouse.getX() / xCell());
