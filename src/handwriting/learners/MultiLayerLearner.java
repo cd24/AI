@@ -12,7 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class MultiLayerLearner implements RecognizerAI {
     MultiLayer perceptron;
-    private int num_inputs = 1600, num_hidden = 20, num_outputs = 3;
+    private int num_inputs = 1600, num_hidden = 60, num_outputs = 1;
     private double rate = 0.1;
     public ArrayList<String> labels;
 
@@ -22,7 +22,7 @@ public class MultiLayerLearner implements RecognizerAI {
 
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
-        double prog = 0.0;
+        System.out.println("Training perceptron");
         labels = setToArrayList(data.allLabels());
         for (int i = 0; i < data.numDrawings(); ++i){
             Duple<String, Drawing> dat = data.getLabelAndDrawing(i);
@@ -30,14 +30,7 @@ public class MultiLayerLearner implements RecognizerAI {
             double labelIndex = labels.indexOf(dat.getFirst());
             if (!labels.contains(dat.getFirst()))
                 labels.add(dat.getFirst());
-            BitSet bits = drawing.getBits();
-            double[] inputs = new double[bits.size()];
-            for (int j = 0; i < drawing.getHeight(); ++j){
-                for (int k = 0; k < drawing.getWidth(); ++k){
-                    int index = j*(drawing.getWidth()-1) + k;
-                    inputs[index] = drawing.bitFor(j, k);
-                }
-            }
+            double[] inputs = getInputs(drawing);
             perceptron.train(inputs, new double[]{labelIndex}, rate);
             progress.add(100.0/data.numDrawings());
         }
@@ -51,6 +44,20 @@ public class MultiLayerLearner implements RecognizerAI {
 
     @Override
     public String classify(Drawing d) {
-        return null;
+        double[] in = getInputs(d);
+        double[] results = perceptron.compute(in);
+        return labels.get(results[0] > 0.5 ? 1 : 0);
+    }
+
+    public double[] getInputs(Drawing drawing){
+        BitSet bits = drawing.getBits();
+        double[] inputs = new double[bits.size()];
+        for (int j = 0; j < drawing.getHeight(); ++j){
+            for (int k = 0; k < drawing.getWidth(); ++k){
+                int index = j*(drawing.getWidth() -1) + k;
+                inputs[index] = drawing.isSet(j, k) ? 1.0 : 0.0;
+            }
+        }
+        return inputs;
     }
 }
