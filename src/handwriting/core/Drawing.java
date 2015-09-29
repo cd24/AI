@@ -11,10 +11,6 @@ public class Drawing {
 		this.height = height;
 		bits = new BitSet(width * height);
 	}
-
-	public BitSet getBits(){
-		return bits;
-	}
 	
 	public Drawing(int width, int height) {
 		init(width, height);
@@ -47,7 +43,7 @@ public class Drawing {
 		return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 	}
 	
-	public int bitFor(int x, int y) {
+	private int bitFor(int x, int y) {
 		return y * width + x;
 	}
 	

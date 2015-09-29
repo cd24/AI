@@ -6,7 +6,6 @@ import handwriting.core.SampleData;
 import search.core.Duple;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -50,8 +49,7 @@ public class MultiLayerLearner implements RecognizerAI {
     }
 
     public double[] getInputs(Drawing drawing){
-        BitSet bits = drawing.getBits();
-        double[] inputs = new double[bits.size()];
+        double[] inputs = new double[drawing.getWidth() * drawing.getHeight()];
         for (int j = 0; j < drawing.getHeight(); ++j){
             for (int k = 0; k < drawing.getWidth(); ++k){
                 int index = j*(drawing.getWidth() -1) + k;
