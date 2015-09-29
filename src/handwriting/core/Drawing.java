@@ -31,6 +31,13 @@ public class Drawing {
 		}
 	}
 	
+	public Drawing(Drawing other) {
+		this(other.width, other.height);
+		for (int i = 0; i < other.bits.size(); i++) {
+			bits.set(i, other.bits.get(i));
+		}
+	}
+	
 	public int getWidth() {
 		return width;
 	}

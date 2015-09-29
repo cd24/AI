@@ -11,7 +11,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class MultiLayerLearner implements RecognizerAI {
     MultiLayer perceptron;
-    private int num_inputs = 1600, num_hidden = 60, num_outputs = 1;
+    private int num_inputs = 1600,
+            num_hidden = 60,
+            num_outputs = 1,
+            training_iter = 200;
     private double rate = 0.1;
     public ArrayList<String> labels;
 
@@ -21,17 +24,22 @@ public class MultiLayerLearner implements RecognizerAI {
 
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
-        System.out.println("Training perceptron");
         labels = setToArrayList(data.allLabels());
+        double prog = 0;
         for (int i = 0; i < data.numDrawings(); ++i){
             Duple<String, Drawing> dat = data.getLabelAndDrawing(i);
             Drawing drawing = dat.getSecond();
-            double labelIndex = labels.indexOf(dat.getFirst());
-            if (!labels.contains(dat.getFirst()))
-                labels.add(dat.getFirst());
+            double labelIndex = labels.indexOf(dat.getFirst()) == 1 ? 100 : -100;
             double[] inputs = getInputs(drawing);
-            perceptron.train(inputs, new double[]{labelIndex}, rate);
-            progress.add(100.0/data.numDrawings());
+            double[][] in_iter = new double[training_iter][inputs.length];
+            double[][] outs = new double[training_iter][1];
+            for (int k = 0; k < training_iter; ++k){
+                in_iter[k] = inputs;
+                outs[k] = new double[]{labelIndex};
+            }
+            perceptron.trainN(in_iter, outs, training_iter, rate);
+            prog += 1.0/data.numDrawings();
+            progress.add(prog);
         }
     }
 
@@ -45,7 +53,7 @@ public class MultiLayerLearner implements RecognizerAI {
     public String classify(Drawing d) {
         double[] in = getInputs(d);
         double[] results = perceptron.compute(in);
-        return labels.get(results[0] > 0.5 ? 1 : 0);
+        return labels.get(results[0] >= 1 ? 1 : 0);
     }
 
     public double[] getInputs(Drawing drawing){

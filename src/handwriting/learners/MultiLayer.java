@@ -34,10 +34,6 @@ public class MultiLayer extends PerceptronNet {
     }
     
     protected void backpropagate(double[] inputs, double rate) {
-        /* TODO: Calculate the backpropagated error for each hidden/output node pair.
-           Then call inputToHidden.setError() and inputToHidden.addToWeightDeltas()
-           to store the errors.
-         */
         for (int hidex = 0; hidex < hiddenToOutput.numInputNodes(); ++hidex) {
             double totalError = 0.0;
             double gradient = gradient(inputToHidden.output(hidex));

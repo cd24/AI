@@ -50,7 +50,7 @@ public class SampleData {
 		if (!hasLabel(label)) {
 			addLabel(label);
 		}
-		labelToDrawing.get(label).add(d);
+		labelToDrawing.get(label).add(new Drawing(d));
 	}
 	
 	public boolean hasLabel(String label) {
@@ -62,7 +62,7 @@ public class SampleData {
 	}
 	
 	public Drawing getDrawing(String label, int index) {
-		return labelToDrawing.get(label).get(index);
+		return new Drawing(labelToDrawing.get(label).get(index));
 	}
 	
 	public Duple<String,Drawing> getLabelAndDrawing(int index) {
