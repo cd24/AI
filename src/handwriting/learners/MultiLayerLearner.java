@@ -3,7 +3,6 @@ package handwriting.learners;
 import handwriting.core.Drawing;
 import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
-import search.core.Duple;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -14,7 +13,7 @@ public class MultiLayerLearner implements RecognizerAI {
     private int num_inputs = 1600,
             num_hidden = 60,
             num_outputs = 1,
-            training_iter = 200;
+            training_iter = 30000;
     private double rate = 0.1;
     public ArrayList<String> labels;
 
@@ -26,20 +25,48 @@ public class MultiLayerLearner implements RecognizerAI {
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         labels = setToArrayList(data.allLabels());
         double prog = 0;
-        for (int i = 0; i < data.numDrawings(); ++i){
-            Duple<String, Drawing> dat = data.getLabelAndDrawing(i);
-            Drawing drawing = dat.getSecond();
-            double labelIndex = labels.indexOf(dat.getFirst()) == 1 ? 100 : -100;
-            double[] inputs = getInputs(drawing);
-            double[][] in_iter = new double[training_iter][inputs.length];
+        int goal = 0;
+        for (int i = 0; i < training_iter; ++i){
+            for (String label : labels){
+                int num_drawings = data.numDrawingsFor(label);
+                for (int k = 0; k < num_drawings; ++k){
+                    Drawing drawing = data.getDrawing(label, k);
+                    double[] inputs = getInputs(drawing);
+                    int expected_out = labels.indexOf(label);
+                    double[] outPut = {expected_out};
+                    perceptron.train(inputs, outPut, rate);
+                }
+            }
+            perceptron.updateWeights();
+            prog += 1.0/training_iter;
+            progress.add(prog);
+        }
+    }
+
+    public void old_train(SampleData data, ArrayBlockingQueue<Double> progress){
+        double prog = 0;
+        int goal = 0;
+        for (String label : data.allLabels()){
+            ArrayList<Drawing> drawings = new ArrayList<>();
+            for (int i = 0; i < data.numDrawingsFor(label); ++i){
+                drawings.add(data.getDrawing(label, i));
+            }
+            ArrayList<Double[]> reps = new ArrayList<>();
+            for (Drawing d : drawings){
+                //reps.add(getInputs(d));
+            }
+
+            double[][] in_iter = new double[training_iter][num_inputs];
             double[][] outs = new double[training_iter][1];
             for (int k = 0; k < training_iter; ++k){
-                in_iter[k] = inputs;
-                outs[k] = new double[]{labelIndex};
+                in_iter[k] = doubleToDouble(
+                        reps.get(k%reps.size()));
+                outs[k] = new double[]{goal};
             }
             perceptron.trainN(in_iter, outs, training_iter, rate);
-            prog += 1.0/data.numDrawings();
+            prog += 1.0/data.numLabels();
             progress.add(prog);
+            ++goal;
         }
     }
 
@@ -49,18 +76,27 @@ public class MultiLayerLearner implements RecognizerAI {
         return labels;
     }
 
+    double[] doubleToDouble(Double[] obj){
+        System.out.println("obj" + obj);
+        double[] arr = new double[obj.length];
+        for (int i = 0; i < obj.length; ++i){
+            arr[i] = obj[i];
+        }
+        return arr;
+    }
+
     @Override
     public String classify(Drawing d) {
         double[] in = getInputs(d);
         double[] results = perceptron.compute(in);
-        return labels.get(results[0] >= 1 ? 1 : 0);
+        return labels.get(results[0] >= 0.5 ? 1 : 0);
     }
 
     public double[] getInputs(Drawing drawing){
         double[] inputs = new double[drawing.getWidth() * drawing.getHeight()];
         for (int j = 0; j < drawing.getHeight(); ++j){
             for (int k = 0; k < drawing.getWidth(); ++k){
-                int index = j*(drawing.getWidth() -1) + k;
+                int index = j*(drawing.getWidth()) + k;
                 inputs[index] = drawing.isSet(j, k) ? 1.0 : 0.0;
             }
         }

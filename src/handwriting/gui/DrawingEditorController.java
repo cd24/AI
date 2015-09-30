@@ -271,8 +271,9 @@ public class DrawingEditorController {
 	
 	void oops(Exception exc) {
 		Alert alert = new Alert(AlertType.ERROR);
-		alert.setContentText(exc.getMessage());
+		alert.setContentText(String.format("Type: %s\nMessage: %s", exc.getClass().toString(), exc.getMessage()));
 		alert.show();
+		exc.printStackTrace();
 	}
 	
 	void info(String s) {
