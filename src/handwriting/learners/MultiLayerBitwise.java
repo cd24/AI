@@ -6,7 +6,7 @@ import handwriting.core.SampleData;
 import java.util.concurrent.ArrayBlockingQueue;
 
 
-public class MultiLayerMultiChar extends MultiLayerLearner {
+public class MultiLayerBitwise extends MultiLayerLearner {
     @Override
     public int num_hidden(){
         return 40;

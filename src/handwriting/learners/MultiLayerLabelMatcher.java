@@ -5,7 +5,7 @@ import handwriting.core.SampleData;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class MultiLayerMatcher extends MultiLayerLearner {
+public class MultiLayerLabelMatcher extends MultiLayerLearner {
     MultiLayer perceptron = new MultiLayer(1600, 30, 1);
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
