@@ -13,7 +13,7 @@ public class MultiLayerMatcher extends MultiLayerLearner {
         labels = setToArrayList(data.allLabels());
         perceptron = new MultiLayer(1600, 50, num_labels);
         rate = 0.2;
-        training_iter = 400;
+        training_iter = 500;
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){
