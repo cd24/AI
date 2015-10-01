@@ -10,11 +10,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class MultiLayerLearner implements RecognizerAI {
     MultiLayer perceptron;
-    private int num_inputs = 1600,
-            num_hidden = 60,
-            num_outputs = 1,
+    protected int num_inputs = 1600,
+            num_hidden = num_hidden(),
+            num_outputs = num_out(),
             training_iter = 30000;
-    private double rate = 0.1;
+    protected double rate = training_rate();
     public ArrayList<String> labels;
 
     public MultiLayerLearner(){
@@ -101,5 +101,17 @@ public class MultiLayerLearner implements RecognizerAI {
             }
         }
         return inputs;
+    }
+
+    public int num_hidden(){
+        return 30;
+    }
+
+    public int num_out(){
+        return 1;
+    }
+
+    public double training_rate(){
+        return 0.1;
     }
 }
