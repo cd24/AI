@@ -52,7 +52,6 @@ public class MultiLayerBitwise extends MultiLayerLearner {
     }
 
     private double[] getOutputForLabel(String label){
-        int num_labels = labels.size();
         double[] outs = cleanArr(8);
         int index = labels.indexOf(label);
         for (int i = 0; i < 8; ++i){
