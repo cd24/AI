@@ -13,7 +13,7 @@ public class MultiLayerLearner implements RecognizerAI {
     protected int num_inputs = 1600,
             num_hidden = num_hidden(),
             num_outputs = num_out(),
-            training_iter = 30000;
+            training_iter = 500;
     protected double rate = training_rate();
     public ArrayList<String> labels;
 

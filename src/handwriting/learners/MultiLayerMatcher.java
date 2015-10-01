@@ -1,7 +1,6 @@
 package handwriting.learners;
 
 import handwriting.core.Drawing;
-import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -12,8 +11,9 @@ public class MultiLayerMatcher extends MultiLayerLearner {
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         int num_labels = data.numLabels();
         labels = setToArrayList(data.allLabels());
-        perceptron = new MultiLayer(1600, 30, num_labels);
-        rate = 0.1;
+        perceptron = new MultiLayer(1600, 50, num_labels);
+        rate = 0.2;
+        training_iter = 400;
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){

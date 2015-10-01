@@ -25,6 +25,7 @@ public class MultiLayerMultiChar extends MultiLayerLearner {
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         labels = setToArrayList(data.allLabels());
+        perceptron = new MultiLayer(1600, num_hidden(), num_out());
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){
@@ -51,59 +52,25 @@ public class MultiLayerMultiChar extends MultiLayerLearner {
 
     private double[] getOutputForLabel(String label){
         int num_labels = labels.size();
-        double[] outs = new double[8];
+        double[] outs = cleanArr(8);
         int index = labels.indexOf(label);
-        if (index > ((1/2.0)*num_labels)){
-            for (int i = 0; i < 4; ++i){
-                outs[i] = 0.0;
-            }
-            if (index > ((3/4.0)*num_labels)){
-                outs[4] = 0.0;
-                outs[5] = 0.0;
-                outs[6] = 1;
-                outs[7] = 1;
-            } else{
-                outs[4] = 1;
-                outs[5] = 1;
-                outs[6] = 0.0;
-                outs[7] = 0.0;
-            }
-        }
-        else {
-            for (int i = 4; i < 8; ++i){
-                outs[i] = 0.0;
-            }
-            if (index < ((1/4.0)*num_labels)){
-                outs[0] = 1;
-                outs[1] = 1;
-                outs[2] = 0.0;
-                outs[3] = 0.0;
-            }
-            else {
-                outs[0] = 0.0;
-                outs[1] = 0.0;
-                outs[2] = 1;
-                outs[3] = 1;
-            }
+        for (int i = 0; i < 8; ++i){
+            outs[i] = index & (1 << i);
         }
         return outs;
     }
 
     public String getLabelForOuts(double[] outs){
-        double total = 0.0;
-        int first = 0, second = 0;
-        for (int i = 0; i < outs.length; ++i){
-            total += outs[i];
-            if (Math.round(outs[i]) > 1){ //not sure where to go with this...
-                if (first == 0) {
-                    first = i;
-                }
-                else if (second == 0){
-                    second = i;
-                }
-            }
+        int index = (int) Math.round(outs[0]);
+        for (int i = 1; i < outs.length; ++i){
+            index = index | (int) Math.round(outs[i]) << i;
         }
-        int index = (int) Math.round(total);
+        if (index >= labels.size()){
+            index = labels.size() - 1;
+        }
+        else if (index < 0 ){
+            index = 0;
+        }
         return labels.get(index);
     }
 }
