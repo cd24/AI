@@ -96,7 +96,7 @@ public class MultiLayerMultiChar extends MultiLayerLearner {
         int first = 0, second = 0;
         for (int i = 0; i < outs.length; ++i){
             total += outs[i];
-            if (Math.round(outs[i]) > 1){
+            if (Math.round(outs[i]) > 1){ //not sure where to go with this...
                 if (first == 0) {
                     first = i;
                 }
