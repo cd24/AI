@@ -9,9 +9,8 @@ import java.util.Set;
 public class Clearer implements BestFirstHeuristic<PlanStep> {
     @Override
     public int getDistance(PlanStep node, PlanStep goal) {
-        Set<Predicate> preds =  node.getWorldState().unmetGoals(goal.getWorldState());
         int num_clear = 0;
-        for (Predicate pred : preds){
+        for (Predicate pred : node.getWorldState()){
             if (pred.getName().contains("clear")){
                 num_clear += 1;
             }

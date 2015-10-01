@@ -9,9 +9,8 @@ import java.util.Set;
 public class LeftToStack implements BestFirstHeuristic<PlanStep> {
     @Override
     public int getDistance(PlanStep node, PlanStep goal) {
-        Set<Predicate> unmetGoals = node.getWorldState().unmetGoals(goal.getWorldState());
         int toStack = 0;
-        for (Predicate predicate : unmetGoals){
+        for (Predicate predicate : node.getWorldState()){
             if (predicate.getName().contains("stack"))
                 ++toStack;
         }

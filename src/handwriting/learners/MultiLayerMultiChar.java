@@ -5,9 +5,7 @@ import handwriting.core.SampleData;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-/**
- * Created by john on 9/30/15.
- */
+
 public class MultiLayerMultiChar extends MultiLayerLearner {
     @Override
     public int num_hidden(){

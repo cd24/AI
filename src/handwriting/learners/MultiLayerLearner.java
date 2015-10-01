@@ -103,6 +103,15 @@ public class MultiLayerLearner implements RecognizerAI {
         return inputs;
     }
 
+    public double[] cleanArr(int length){
+        //not sure if this problem exists in java, but it could.
+        double[] arr = new double[length];
+        for (int i =0; i < length; ++i){
+            arr[i] = 0.0;
+        }
+        return arr;
+    }
+
     public int num_hidden(){
         return 30;
     }
