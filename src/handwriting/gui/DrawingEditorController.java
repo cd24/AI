@@ -168,8 +168,8 @@ public class DrawingEditorController {
 	}
 	
 	void setupChoiceBoxes() {
-		labelChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> resetDrawingList());
-
+		labelChoice.getSelectionModel().selectedItemProperty().addListener((v, vOld, vNew) -> resetDrawingList(vNew));
+		
 		drawingChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> {
 			int choice = vNew.intValue();
 			if (choice >= 0) {
@@ -271,7 +271,7 @@ public class DrawingEditorController {
 	
 	void oops(Exception exc) {
 		Alert alert = new Alert(AlertType.ERROR);
-		alert.setContentText(String.format("Type: %s\nMessage: %s", exc.getClass().toString(), exc.getMessage()));
+		alert.setContentText(String.format("Exception: %s\nMessage: %s\n", exc.getClass().toString(), exc.getMessage()));
 		alert.show();
 		exc.printStackTrace();
 	}
@@ -307,7 +307,7 @@ public class DrawingEditorController {
 			labelChoice.getItems().add(label);
 		}
 		labelChoice.getSelectionModel().select(label);
-		resetDrawingList();
+		resetDrawingList(label);
 	}
 	
 	void resetLabels() {
@@ -315,14 +315,16 @@ public class DrawingEditorController {
 		for (String label: drawings.allLabels()) {
 			labelChoice.getItems().add(label);
 		}
-		if (labelChoice.getItems().size() > 0)
+		if (labelChoice.getItems().size() > 0) {
 			labelChoice.getSelectionModel().select(0);
-		resetDrawingList();
+			resetDrawingList(drawings.allLabels().iterator().next());
+		}
 	}
 	
-	void resetDrawingList() {
+	void resetDrawingList(String label) {
+		System.out.println("ResetDrawingList: " + label);
 		drawingChoice.getItems().clear();
-		for (int i = 0; i < drawings.numDrawingsFor(getCurrentLabel()); i++) {
+		for (int i = 0; i < drawings.numDrawingsFor(label); i++) {
 			drawingChoice.getItems().add(i);
 		}
 	}
