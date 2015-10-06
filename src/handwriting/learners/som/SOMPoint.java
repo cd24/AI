@@ -21,4 +21,17 @@ public class SOMPoint {
 			return false;
 		}
 	}
+
+	public SOMPoint[] getNeighbors(double radius){
+		return new SOMPoint[]{
+				new SOMPoint(x + 1, y),
+				new SOMPoint(x + 1, y + 1),
+				new SOMPoint(x + 1, y - 1),
+				new SOMPoint(x - 1, y),
+				new SOMPoint(x - 1, y + 1),
+				new SOMPoint(x - 1, y - 1),
+				new SOMPoint(x, y + 1),
+				new SOMPoint(x, y - 1)
+		};
+	}
 }
