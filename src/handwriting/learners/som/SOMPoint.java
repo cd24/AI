@@ -1,5 +1,7 @@
 package handwriting.learners.som;
 
+import java.util.ArrayList;
+
 public class SOMPoint {
 	private int x, y;
 	
@@ -23,15 +25,14 @@ public class SOMPoint {
 	}
 
 	public SOMPoint[] getNeighbors(double radius){
-		return new SOMPoint[]{
-				new SOMPoint(x + 1, y),
-				new SOMPoint(x + 1, y + 1),
-				new SOMPoint(x + 1, y - 1),
-				new SOMPoint(x - 1, y),
-				new SOMPoint(x - 1, y + 1),
-				new SOMPoint(x - 1, y - 1),
-				new SOMPoint(x, y + 1),
-				new SOMPoint(x, y - 1)
-		};
+		ArrayList<SOMPoint> points = new ArrayList<>();
+		for (int i = 0; i < radius; ++i){
+			for (int k = 0; k < radius; ++k){
+				if (Math.sqrt((i*i) + (k*k)) < radius)
+					points.add(new SOMPoint(i, k));
+			}
+		}
+		SOMPoint[] pts = new SOMPoint[points.size()];
+		return points.toArray(pts);
 	}
 }
