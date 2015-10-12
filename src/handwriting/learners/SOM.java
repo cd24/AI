@@ -19,25 +19,34 @@ public class SOM implements RecognizerAI {
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         Drawing sample = data.getDrawing(0);
         double doneness = 0;
-        map = new SelfOrgMap(5, 5, sample.getWidth(), sample.getHeight());
+        map = new SelfOrgMap(10, 10, sample.getWidth(), sample.getHeight());
         for (int k = 0; k < iterations; ++k) {
             for (String label : data.allLabels()) {
                 for (int i = 0; i < data.numDrawingsFor(label); ++i) {
                     Drawing current = data.getDrawing(label, i);
                     SOMPoint best = map.bestFor(current);
-                    for (SOMPoint neighbor : best.getNeighbors(map.learning_radius)){
+                    for (SOMPoint neighbor : best.getNeighbors(map.learning_radius, map.getWidth(), map.getHeight())){
                         trainMap(current, neighbor, best);
                     }
-                    doneness += 1.0 / (k * data.numDrawings());
-                    //progress.add(doneness);
+                    doneness += 1.0 / (k * data.numLabels() * data.numDrawings());
+                    progress.add(doneness);
                 }
+            }
+        }
+
+        for (String label : data.allLabels()){
+            for (int k = 0; k < data.numDrawingsFor(label); ++k){
+                Drawing s = data.getDrawing(label, k);
+                map.setLabel(s, label);
             }
         }
     }
 
     @Override
     public String classify(Drawing d) {
-        return null;
+        SOMPoint labelLoc = map.bestFor(d);
+        String result = map.getLabel(labelLoc);
+        return result == null ? "" : result;
     }
 
     @Override
@@ -47,7 +56,7 @@ public class SOM implements RecognizerAI {
 
     private void trainMap(Drawing example, SOMPoint cell, SOMPoint hitNode){
         double distanceFromHit = cell.distanceTo(hitNode.x(), hitNode.y());
-        double scale = ((map.learning_radius - distanceFromHit)/map.learning_radius) * map.learning_rate;
+        double scale = (1 - ((map.learning_radius - distanceFromHit)/map.learning_radius)) * map.learning_rate;
         map.trainMap(example, cell, scale);
     }
 

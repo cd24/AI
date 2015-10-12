@@ -28,11 +28,11 @@ public class SOMPoint {
 		return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
 	}
 
-	public SOMPoint[] getNeighbors(double radius){
+	public SOMPoint[] getNeighbors(double radius, int width, int height){
 		ArrayList<SOMPoint> points = new ArrayList<>();
-		for (int i = 0; i < radius; ++i){
-			for (int k = 0; k < radius; ++k){
-				SOMPoint point = new SOMPoint(i, k);
+		for (int i = 0; i < height; ++i){
+			for (int k = 0; k < width; ++k){
+				SOMPoint point = new SOMPoint(k, i);
 				if (distanceTo(i, k) <= radius && !this.equals(point))
 					points.add(point);
 			}
