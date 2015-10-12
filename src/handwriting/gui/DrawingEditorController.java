@@ -39,6 +39,9 @@ public class DrawingEditorController {
 	Canvas canvas;
 	
 	@FXML
+	Canvas visualization;
+	
+	@FXML
 	ChoiceBox<String> labelChoice;
 	
 	@FXML
@@ -226,6 +229,7 @@ public class DrawingEditorController {
 		new Thread(() -> {
 			try {trainer = result.take();} 
 			catch (Exception e) {}
+			Platform.runLater(() -> trainer.visualize(visualization));
 			Platform.runLater(() -> info("Training finished"));
 		}).start();		
 	}

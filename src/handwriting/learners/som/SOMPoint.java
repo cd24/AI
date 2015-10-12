@@ -24,12 +24,17 @@ public class SOMPoint {
 		}
 	}
 
+	public double distanceTo(int x, int y) {
+		return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+	}
+
 	public SOMPoint[] getNeighbors(double radius){
 		ArrayList<SOMPoint> points = new ArrayList<>();
 		for (int i = 0; i < radius; ++i){
 			for (int k = 0; k < radius; ++k){
-				if (Math.sqrt((i*i) + (k*k)) < radius)
-					points.add(new SOMPoint(i, k));
+				SOMPoint point = new SOMPoint(i, k);
+				if (distanceTo(i, k) <= radius && !this.equals(point))
+					points.add(point);
 			}
 		}
 		SOMPoint[] pts = new SOMPoint[points.size()];

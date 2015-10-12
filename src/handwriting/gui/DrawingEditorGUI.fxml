@@ -40,7 +40,20 @@
       </VBox>
    </top>
    <center>
-      <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
+      <TabPane>
+         <tabs>
+            <Tab text="Drawing">
+               <content>
+                  <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
+               </content>
+            </Tab>
+            <Tab text="Visualization">
+               <content>
+                  <Canvas fx:id="visualization" height="200.0" width="200.0" />
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
    </center>
    <bottom>
       <VBox>

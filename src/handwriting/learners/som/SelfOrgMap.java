@@ -3,15 +3,16 @@ package handwriting.learners.som;
 import handwriting.core.Drawing;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class SelfOrgMap {
 	private int drawingWidth, drawingHeight,
 				map_height, map_width,
 				training_iters = 600;
 
-	private double learning_rate = 0.1,
+	public double learning_rate = 0.1,
 					learning_radius = 2;
-	private Drawing[][] map;
+	private double[][][][] map;
 	// Representation data type
 	
 	public SelfOrgMap(int width, int height, int dWidth, int dHeight) {
@@ -19,27 +20,34 @@ public class SelfOrgMap {
 		this.drawingHeight = dHeight;
 		this.map_height = height;
 		this.map_width = width;
-		map = new Drawing[map_height][map_width];
+		map = new double[map_height][map_width][drawingHeight][drawingWidth];
 		for (int i = 0; i < map_height; ++i){
 			for (int j = 0; j < map_width; ++j){
-				map[i][j] = new Drawing(dWidth, dHeight);
+				map[i][j] = new double[drawingHeight][drawingWidth];
+				for (int h = 0; h < drawingHeight; ++h){
+					for (int l = 0; l < drawingWidth; ++l){
+						map[i][j][h][l] = Math.random();
+					}
+				}
 			}
 		}
 		/* TODO: Initialize your representation here */
 	}
-	
-	// TODO: Fix these two methods
+
 	public int getWidth() {return map_width;}
 	public int getHeight() {return map_height;}
+
+	public int getDrawingWidth() {return drawingWidth;}
+	public int getDrawingHeight() {return drawingHeight;}
 	
 	public SOMPoint bestFor(Drawing example) {
 		// TODO: Return the best matching node for "example"
-		int min_dist = Integer.MIN_VALUE;
+		double min_dist = Double.MAX_VALUE;
 		SOMPoint closest = new SOMPoint(0, 0);
 		for (int i = 0; i < map_height; ++i){
 			for (int j = 0; j < map_width; ++j){
-				Drawing index = map[i][j];
-				int dist = distance(example, index);
+				double[][] index = map[i][j];
+				double dist = distance(example, index);
 				if (dist < min_dist){
 					min_dist = dist;
 					closest = new SOMPoint(j, i);
@@ -49,8 +57,14 @@ public class SelfOrgMap {
 		return closest;
 	}
 
-	public int distance(Drawing a, Drawing b){
-		return a.compare(b);
+	public double distance(Drawing a, double[][] b){
+		double distance = 0;
+		for (int x = 0; x < drawingWidth; ++x){
+			for (int y = 0; y < drawingWidth; ++y){
+				distance += Math.pow(b[x][y] - (a.isSet(x, y) ? 1 : 0), 2);
+			}
+		}
+		return distance;
 	}
 	
 	public boolean isLegal(SOMPoint point) {
@@ -58,49 +72,46 @@ public class SelfOrgMap {
 	}
 	
 	public void train(Drawing example) {
-		/* TODO: Train your SOM using "example" */
+		/* TODO: Train your som using "example" */
 		SOMPoint closest = bestFor(example);
 		SOMPoint[] neighbors = closest.getNeighbors(learning_radius);
-		trainN(example, closest, closest);
+		trainMap(example, closest, learning_rate);
 		for (SOMPoint neighbor : neighbors){
-			trainN(example, neighbor, closest);
-		}
-	}
-
-	private void trainN(Drawing example, SOMPoint cell, SOMPoint hitNode){
-		double distanceFromHit = Math.sqrt((hitNode.x()*hitNode.x()) + (hitNode.y()*hitNode.y()));
-		double scale = (learning_radius - distanceFromHit)/learning_radius;
-		for (int i = 0; i < training_iters; ++i){
-			trainMap(example, cell, scale);
+			double learning = learning_rate*(neighbor.distanceTo(closest.x(), closest.y())/learning_radius);
+			trainMap(example, neighbor, learning);
 		}
 	}
 
 	public void trainMap(Drawing example, SOMPoint cell, double scale){
 		for (int x = 0; x < example.getWidth(); ++x){
 			for (int y = 0; y < example.getHeight(); ++y){
-				boolean exampleVal = example.isSet(cell.x(), cell.y());
-				Drawing source = map[cell.x()][cell.y()];
-				boolean sourceVal = source.isSet(x, y);
-				boolean newVal = Math.random() < scale ? exampleVal : sourceVal;
-				source.set(cell.x(), cell.y(), newVal);
+				boolean isSet = example.isSet(x, y);
+				double exampleVal = isSet ? 1.0 : 0.0;
+				double source = map[cell.x()][cell.y()][x][y];
+				source = (exampleVal - source)*scale + source;
+				map[cell.x()][cell.y()][x][y] = source;
 			}
 		}
 	}
-	
+
+	public Color getFillFor(int x, int y, SOMPoint node) {
+		double value = map[node.x()][node.y()][x][y];
+		return new Color(value, value, value, 1.0);
+	}
+
 	public void visualize(Canvas surface) {
-		/* TODO: Develop a custom SOM visualization and draw it on "surface" */
-		double single_pixel_height = surface.getHeight() / (map_height * drawingHeight);
-		double single_pixel_width = surface.getWidth() / (map_width * drawingWidth);
-		GraphicsContext context = surface.getGraphicsContext2D();
-		for (int i = 0; i < map_height; ++i){
-			for (int j = 0; j < map_width; ++j){
-				Drawing drawing = map[i][j];
-				for (int hpixel = 0; hpixel < drawingHeight; ++hpixel) {
-					for (int wpixel = 0; wpixel < drawingWidth; ++wpixel) {
-						double x = (hpixel + i) * single_pixel_height,
-								y = (wpixel + j) * single_pixel_width;
-						if (drawing.isSet(hpixel, wpixel))
-							context.fillRect(x, y, single_pixel_width, single_pixel_height);
+		final double cellWidth = surface.getWidth() / getWidth();
+		final double cellHeight = surface.getHeight() / getHeight();
+		final double pixWidth = cellWidth / getDrawingWidth();
+		final double pixHeight = cellHeight / getDrawingHeight();
+		GraphicsContext g = surface.getGraphicsContext2D();
+		for (int x = 0; x < getWidth(); x++) {
+			for (int y = 0; y < getHeight(); y++) {
+				SOMPoint cell = new SOMPoint(x, y);
+				for (int x1 = 0; x1 < getDrawingWidth(); x1++) {
+					for (int y1 = 0; y1 < getDrawingHeight(); y1++) {
+						g.setFill(getFillFor(x1, y1, cell));
+						g.fillRect(cellWidth * x + pixWidth * x1, cellHeight * y + pixHeight * y1, pixWidth, pixHeight);
 					}
 				}
 			}
