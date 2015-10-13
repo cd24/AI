@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
 public class SelfOrgMap {
 	private int drawingWidth, drawingHeight,
 				map_height, map_width,
-				training_iters = 600;
+				training_iters = 10;
 
 	public double learning_rate = 0.1,
 					learning_radius = 2;
@@ -115,8 +115,10 @@ public class SelfOrgMap {
 	public void setRemainingLabels(){
 		for (int i = 0; i < getWidth(); ++i){
 			for (int j = 0; j < getHeight(); ++j){
-				if (labels[j][i] == ""){
+				if (labels[j][i] == null){
 					//move labels in clever ways
+					SOMPoint bestMatch = findCounterPart(new SOMPoint(i, j));
+					labels[j][i] = labels[bestMatch.y()][bestMatch.x()];
 				}
 			}
 		}
@@ -129,7 +131,7 @@ public class SelfOrgMap {
 		for (int i = 0; i < getWidth(); ++i){
 			for (int j = 0; j < getHeight(); ++j){
 				double distance = distance(value, map[j][i]);
-				if (distance < min_dist){
+				if (distance < min_dist && labels[j][i] != null){
 					min_dist = distance;
 					minimum = new SOMPoint(i, j);
 				}
@@ -144,6 +146,12 @@ public class SelfOrgMap {
 
 	public Color getFillFor(int x, int y, SOMPoint node) {
 		double value = map[node.x()][node.y()][x][y];
+		if (value < 0){
+			value = 0.0;
+		}
+		else if (value > 1){
+			value = 1.0;
+		}
 		return new Color(value, value, value, 1.0);
 	}
 
