@@ -1,6 +1,8 @@
 package handwriting.core;
 
 
+import javafx.scene.canvas.Canvas;
+
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -48,4 +50,6 @@ public interface RecognizerAI {
 		for (int d: data) {sum += d;}
 		return sum / data.size();
 	}
+
+	default public void visualize(Canvas surface) {}
 }

@@ -6,7 +6,7 @@ import handwriting.core.SampleData;
 import java.util.concurrent.ArrayBlockingQueue;
 
 
-public class MultiLayerMultiChar extends MultiLayerLearner {
+public class MultiLayerBitwise extends MultiLayerLearner {
     @Override
     public int num_hidden(){
         return 40;
@@ -26,7 +26,7 @@ public class MultiLayerMultiChar extends MultiLayerLearner {
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         labels = setToArrayList(data.allLabels());
         perceptron = new MultiLayer(1600, num_hidden(), num_out());
-        training_iter = 500;
+        training_iter = 700;
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){
@@ -52,7 +52,6 @@ public class MultiLayerMultiChar extends MultiLayerLearner {
     }
 
     private double[] getOutputForLabel(String label){
-        int num_labels = labels.size();
         double[] outs = cleanArr(8);
         int index = labels.indexOf(label);
         for (int i = 0; i < 8; ++i){

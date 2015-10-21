@@ -96,4 +96,26 @@ public class Drawing {
 			return false;
 		}
 	}
+
+	public int compare(Drawing other){
+		BitSet temp = copySet(other.bits);
+		temp.xor(other.bits);
+		return sum(temp);
+	}
+
+	int sum(BitSet set){
+		int sum = 0;
+		for (int i = 0; i < set.length(); ++i){
+			sum += set.get(i) ? 1 : 0;
+		}
+		return sum;
+	}
+
+	public BitSet copySet(BitSet set){
+		BitSet new_set = new BitSet(set.length());
+		for (int i = 0; i < set.length(); ++i){
+			new_set.set(i, bits.get(i));
+		}
+		return new_set;
+	}
 }
