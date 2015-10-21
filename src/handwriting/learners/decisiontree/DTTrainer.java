@@ -25,10 +25,12 @@ public class DTTrainer {
 	
 	private DTNode train(DTSampleData data) throws InterruptedException {
 		if (data.numLabels() == 1) {
-			// TODO: Create a leaf node
-			// Update the progress bar
+			DTLeaf leaf = new DTLeaf(data.getLabelFor(0));
+			currentProgress += tick;
+			progress.add(currentProgress);
 			return null;
 		} else {
+
 			// TODO: Create an interior node
 			// Use recursion to create the children of that node
 			return null;

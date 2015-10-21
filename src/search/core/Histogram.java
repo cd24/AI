@@ -14,7 +14,15 @@ public class Histogram<T> {
 	}
 	
 	public T getPluralityWinner() {
-		// TODO: Return the key with the highest count.
-		return null;
+		T highest = null;
+		int highRep = -1;
+		for (T key : counts.keySet()){
+			int count = getCountFor(key);
+			if (highRep < count){
+				highest = key;
+				highRep = count;
+			}
+		}
+		return highest;
 	}
 }
