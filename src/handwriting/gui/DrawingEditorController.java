@@ -1,5 +1,10 @@
 package handwriting.gui;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import handwriting.core.Drawing;
 import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
@@ -7,17 +12,21 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import search.core.AIReflector;
 import search.core.Duple;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.concurrent.ArrayBlockingQueue;
+import search.core.Histogram;
 
 public class DrawingEditorController {
 	@FXML
@@ -37,6 +46,9 @@ public class DrawingEditorController {
 	
 	@FXML
 	Canvas canvas;
+	
+	@FXML
+	Canvas visualization;
 	
 	@FXML
 	ChoiceBox<String> labelChoice;
@@ -68,6 +80,21 @@ public class DrawingEditorController {
 	@FXML
 	TextField testResults;
 	
+	@FXML
+	TableView<Result> resultTable;
+	
+	@FXML
+	TableColumn<TableView<Result>,String> labels;
+	
+	@FXML
+	TableColumn<TableView<Result>,Double> percents;
+	
+	@FXML
+	TableColumn<TableView<Result>,Integer> rights;
+	
+	@FXML
+	TableColumn<TableView<Result>,Integer> wrongs;
+	
 	RecognizerAI trainer;
 	
 	SampleData drawings;
@@ -87,7 +114,15 @@ public class DrawingEditorController {
 		setupButtons();
 		setupCanvas();
 		setupChoiceBoxes();
+		setupTable();
 		trainingProgress.setProgress(1.0);
+	}
+	
+	void setupTable() {
+		labels.setCellValueFactory(new PropertyValueFactory<TableView<Result>,String>("label"));
+		percents.setCellValueFactory(new PropertyValueFactory<TableView<Result>,Double>("percent"));
+		rights.setCellValueFactory(new PropertyValueFactory<TableView<Result>,Integer>("success"));
+		wrongs.setCellValueFactory(new PropertyValueFactory<TableView<Result>,Integer>("failure"));
 	}
 	
 	void setupVars() {
@@ -168,8 +203,8 @@ public class DrawingEditorController {
 	}
 	
 	void setupChoiceBoxes() {
-		labelChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> resetDrawingList());
-
+		labelChoice.getSelectionModel().selectedItemProperty().addListener((v, vOld, vNew) -> resetDrawingList(vNew));
+		
 		drawingChoice.getSelectionModel().selectedIndexProperty().addListener((v,vOld,vNew) -> {
 			int choice = vNew.intValue();
 			if (choice >= 0) {
@@ -226,6 +261,7 @@ public class DrawingEditorController {
 		new Thread(() -> {
 			try {trainer = result.take();} 
 			catch (Exception e) {}
+			Platform.runLater(() -> trainer.visualize(visualization));
 			Platform.runLater(() -> info("Training finished"));
 		}).start();		
 	}
@@ -259,19 +295,31 @@ public class DrawingEditorController {
 	
 	void runTests(SampleData testData) {
 		int numCorrect = 0;
+		Histogram<String> correct = new Histogram<>(), incorrect = new Histogram<>();
 		for (int i = 0; i < testData.numDrawings(); i++) {
 			Duple<String,Drawing> test = testData.getLabelAndDrawing(i);
 			if (trainer.classify(test.getSecond()).equals(test.getFirst())) {
 				numCorrect += 1;
+				correct.bump(test.getFirst());
+			} else {
+				incorrect.bump(test.getFirst());
 			}
 		}
 		double percent = 100.0 * numCorrect / testData.numDrawings();
 		testResults.setText(String.format("%d/%d (%4.2f%%) correct", numCorrect, testData.numDrawings(), percent));		
+		resetTable(testData, correct, incorrect);
+	}
+	
+	void resetTable(SampleData testData, Histogram<String> correct, Histogram<String> incorrect) {
+		resultTable.getItems().clear();
+		for (String label: testData.allLabels()) {
+			resultTable.getItems().add(new Result(label, correct.getCountFor(label), incorrect.getCountFor(label)));
+		}
 	}
 	
 	void oops(Exception exc) {
 		Alert alert = new Alert(AlertType.ERROR);
-		alert.setContentText(String.format("Type: %s\nMessage: %s", exc.getClass().toString(), exc.getMessage()));
+		alert.setContentText(String.format("Exception: %s\nMessage: %s\n", exc.getClass().toString(), exc.getMessage()));
 		alert.show();
 		exc.printStackTrace();
 	}
@@ -307,7 +355,7 @@ public class DrawingEditorController {
 			labelChoice.getItems().add(label);
 		}
 		labelChoice.getSelectionModel().select(label);
-		resetDrawingList();
+		resetDrawingList(label);
 	}
 	
 	void resetLabels() {
@@ -315,14 +363,15 @@ public class DrawingEditorController {
 		for (String label: drawings.allLabels()) {
 			labelChoice.getItems().add(label);
 		}
-		if (labelChoice.getItems().size() > 0)
+		if (labelChoice.getItems().size() > 0) {
 			labelChoice.getSelectionModel().select(0);
-		resetDrawingList();
+			resetDrawingList(drawings.allLabels().iterator().next());
+		}
 	}
 	
-	void resetDrawingList() {
+	void resetDrawingList(String label) {
 		drawingChoice.getItems().clear();
-		for (int i = 0; i < drawings.numDrawingsFor(getCurrentLabel()); i++) {
+		for (int i = 0; i < drawings.numDrawingsFor(label); i++) {
 			drawingChoice.getItems().add(i);
 		}
 	}

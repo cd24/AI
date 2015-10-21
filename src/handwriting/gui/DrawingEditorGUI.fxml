@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
+<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handwriting.gui.DrawingEditorController">
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane prefHeight="366.0" prefWidth="297.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handwriting.gui.DrawingEditorController">
    <top>
       <VBox>
          <children>
@@ -40,7 +43,36 @@
       </VBox>
    </top>
    <center>
-      <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
+      <TabPane>
+         <tabs>
+            <Tab text="Drawing">
+               <content>
+                  <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
+               </content>
+            </Tab>
+            <Tab text="Result">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="resultTable" layoutX="-1.0" layoutY="-7.0" prefHeight="200.0" prefWidth="300.0">
+                          <columns>
+                            <TableColumn fx:id="labels" prefWidth="75.0" text="Label" />
+                              <TableColumn fx:id="percents" prefWidth="75.0" text="Percent" />
+                            <TableColumn fx:id="rights" prefWidth="75.0" text="Correct" />
+                              <TableColumn fx:id="wrongs" prefWidth="75.0" text="Incorrect" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+            <Tab text="Visualization">
+               <content>
+                  <Canvas fx:id="visualization" height="200.0" width="200.0" />
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
    </center>
    <bottom>
       <VBox>
