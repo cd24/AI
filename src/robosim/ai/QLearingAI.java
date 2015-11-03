@@ -65,10 +65,8 @@ public class QLearingAI implements Controller {
             transitCounts = new double[previous.numStates()][previous.numStates()];
             return;
         }
-        HashMap<QLearner.Transition, Double> values = transitionCounts.getOrDefault(previous, new HashMap<>());
-        QLearner.Transition trans = new QLearner.Transition(previous, current, 0);
         transitCounts[previous.index()][current.index()] += 1;
         learner.updateMarkovWithData(current, transitCounts);
-        transitionCounts.put(previous, values); // it is important to note that I have stopped caring about memory pressures at this point.
+        previous = current;
     }
 }
