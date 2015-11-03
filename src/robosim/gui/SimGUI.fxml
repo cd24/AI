@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="robosim.gui.SimController">
+   <center>
+      <Canvas fx:id="canvas" height="200.0" width="200.0" BorderPane.alignment="CENTER" />
+   </center>
+   <top>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Place" />
+            <ChoiceBox fx:id="objectToPlace" prefWidth="150.0" />
+         </children>
+      </HBox>
+   </top>
+   <bottom>
+      <VBox>
+         <children>
+            <HBox BorderPane.alignment="CENTER">
+               <children>
+                  <Label text="Q-Learner" />
+                  <ChoiceBox fx:id="ai" prefWidth="150.0" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Button fx:id="start" mnemonicParsing="false" text="Start" />
+                  <Button fx:id="stop" mnemonicParsing="false" text="Stop" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Label text="Moves" />
+                  <TextField fx:id="total" prefWidth="60.0" />
+                  <Label text="Forward" />
+                  <TextField fx:id="forward" prefWidth="60.0" />
+                  <Label text="Collisions" />
+                  <TextField fx:id="collisions" prefWidth="60.0" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </bottom>
+</BorderPane>

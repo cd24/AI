@@ -27,13 +27,31 @@ public class DTTrainer {
 		if (data.numLabels() == 1) {
 			DTLeaf leaf = new DTLeaf(data.getLabelFor(0));
 			currentProgress += tick;
-			progress.add(currentProgress);
-			return null;
+			//progress.add(currentProgress);
+			return leaf;
 		} else {
-
-			// TODO: Create an interior node
-			// Use recursion to create the children of that node
-			return null;
+			int featureX = 0, featureY = 0;
+			double score = -10;
+			double parentScore = data.getGini();
+			for (int i = 0; i < data.getDrawingHeight(); ++i){
+				for (int j = 0; j < data.getDrawingWidth(); ++j){
+					Duple<DTSampleData, DTSampleData> split = data.splitOn(j, i);
+					double newScore = parentScore - (split.getFirst().getGini() + split.getSecond().getGini());
+					if (newScore > score) {
+						score = newScore;
+						featureX = j;
+						featureY = i;
+					}
+				}
+			}
+			Duple<DTSampleData, DTSampleData> split = data.splitOn(featureX, featureY);
+			DTInteriorNode node = new DTInteriorNode(featureX,
+													featureY,
+													train(split.getSecond()),
+													train(split.getFirst()));
+			currentProgress += tick;
+			//progress.add(currentProgress);
+			return node;
 		}
 	}
 }

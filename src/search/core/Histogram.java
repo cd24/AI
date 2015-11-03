@@ -1,6 +1,7 @@
 package search.core;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class Histogram<T> {
 	private HashMap<T,Integer> counts = new HashMap<>();
@@ -13,16 +14,16 @@ public class Histogram<T> {
 		return counts.getOrDefault(value, 0);
 	}
 	
-	public T getPluralityWinner() {
-		T highest = null;
-		int highRep = -1;
-		for (T key : counts.keySet()){
-			int count = getCountFor(key);
-			if (highRep < count){
-				highest = key;
-				highRep = count;
-			}
+	public int getTotalCounts() {
+		int total = 0;
+		for (Entry<T,Integer> entry: counts.entrySet()) {
+			total += entry.getValue();
 		}
-		return highest;
+		return total;
+	}
+	
+	public T getPluralityWinner() {
+		// TODO: Return the key with the highest count.
+		return null;
 	}
 }

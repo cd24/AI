@@ -2,9 +2,7 @@ package search.core;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 public class AIReflector<T> {
@@ -27,19 +25,18 @@ public class AIReflector<T> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void testAndAdd(String name, Class superType, String packageName, Class... paramTypes) {
 		name = name.substring(0, name.length() - suffix.length());
 		try {
 			Class type = Class.forName(packageName + "." + name);
-			Object obj = type.newInstance();
-			if (superType.isInstance(obj)) {
+			type.newInstance();
+			if (superType.isAssignableFrom(type)) {
 				name2type.put(name, type);
 			}
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			// If an exception is thrown, we omit the type.
-			// Hence, ignore all three exceptions.
-		} catch (ClassNotFoundException e) {
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
+			// Hence, ignore this exceptions.
 		}
 	}
 	

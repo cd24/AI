@@ -16,7 +16,7 @@ public class Bagger implements RecognizerAI {
 	private ArrayList<RecognizerAI> bags;
 	private Supplier<RecognizerAI> supplier;
 	private int numBags;
-	public int numRounds = 100;
+	public int numRounds = 1;
 	
 	// For the "supplier" parameter, use the constructor; for example, 
 	// b = new Bagger(DecisionTree::new, 30)
@@ -30,9 +30,11 @@ public class Bagger implements RecognizerAI {
 	public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
 		bags.clear();
 		for (int i = 0; i < numBags; ++i){
+			System.out.print("Training bag: " + (i + 1) + " of " + numBags + "\r");
 			RecognizerAI instance = supplier.get();
 			trainInstance(instance, sampled(data), progress);
 			bags.add(instance);
+			System.out.println("Trained bag: " + (i + 1) + " of " + numBags);
 		}
 	}
 

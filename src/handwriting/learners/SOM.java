@@ -11,13 +11,17 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class SOM implements RecognizerAI {
     SelfOrgMap map;
-    int iterations = 200, map_height = 10, map_width = 10;
+    int iterations = 10, map_height = 10, map_width = 10;
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
+        System.out.print("Training SOM... actually" + "\r");
         Drawing sample = data.getDrawing(0);
         double doneness = 0;
+        map_height = 2 * data.numLabels();
+        map_width = 2 * data.numLabels();
         map = new SelfOrgMap(map_height, map_width, sample.getWidth(), sample.getHeight());
         for (int k = 0; k < iterations; ++k) {
+            System.out.print("Training som iter: " + k + " of " + iterations + "\r");
             for (String label : data.allLabels()) {
                 for (int i = 0; i < data.numDrawingsFor(label); ++i) {
                     Drawing current = data.getDrawing(label, i);

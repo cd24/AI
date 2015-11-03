@@ -9,7 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class MultiLayerBitwise extends MultiLayerLearner {
     @Override
     public int num_hidden(){
-        return 40;
+        return 50;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class MultiLayerBitwise extends MultiLayerLearner {
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
         labels = setToArrayList(data.allLabels());
         perceptron = new MultiLayer(1600, num_hidden(), num_out());
-        training_iter = 700;
+        training_iter = 250;
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){

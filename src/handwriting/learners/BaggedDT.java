@@ -5,19 +5,20 @@ import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
 
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.Supplier;
 
-public class BaggedSOM implements RecognizerAI {
-    Bagger bagger = new Bagger(SOM::new, 15);
+/**
+ * Created by john on 10/23/15.
+ */
+public class BaggedDT implements RecognizerAI{
+    Bagger bag;
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
-        System.out.println("Training SOM Bag");
-        bagger.train(data, progress);
-        System.out.println("Done training SOM Bag");
+        bag = new Bagger(DecisionTree::new, 30);
+        bag.train(data, progress);
     }
 
     @Override
     public String classify(Drawing d) {
-        return bagger.classify(d);
+        return bag.classify(d);
     }
 }
