@@ -85,7 +85,7 @@ public class BatchedTester {
         writer.write(title + "\n");
         Histogram correct = results.getFirst(), incorrect = results.getSecond();
         Double percent = results.getThird();
-        writer.write(title + "\n" + percent + "\n");
+        writer.write(title + "\n" + percent + " Correct\n");
         for (String label : data.allLabels()){
             Result res = new Result(label, correct.getCountFor(label), incorrect.getCountFor(label));
             writer.write(res.labelProperty() + ", " + res.percentProperty() + ", " + res.successProperty() + ", " + res.failureProperty() + "\n");
