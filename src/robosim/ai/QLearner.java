@@ -88,18 +88,24 @@ public class QLearner {
         return guess;
     }
 
-    public void updateMarkovWithData(QState source, HashMap<Transition, Double> counts){
-        ArrayList<Transition> transits = new ArrayList<>();
-        double total = 0;
-        for (Transition key: counts.keySet()){
-            total += counts.get(key);
+    public void updateMarkovWithData(QState source, double[][] counts){
+        double count = 0;
+        int sourceIdx = source.index();
+        for (int i = 0; i < states.length; ++i){
+            count += counts[sourceIdx][states[i].index()];
         }
-        for (Transition key: counts.keySet()){
-            double count = counts.get(key);
-            Transition transition = new Transition(source, key.destination, count/total);
-            transits.add(transition);
+        ArrayList<Transition> trans = new ArrayList<>();
+        for (int i = 0; i < states.length; ++i){
+            double currCount = counts[sourceIdx][states[i].index()];
+            double likelyhood = currCount/count;
+            if (count == 0) {
+                likelyhood = 0;
+            }
+            Transition transit = new Transition(source, states[i], likelyhood);
+
+            trans.add(transit);
         }
-        transitions.put(source, transits);
+        transitions.put(source, trans);
     }
 
     public static class Transition{
@@ -109,6 +115,11 @@ public class QLearner {
             this.source = source;
             this.destination = destination;
             this.probability = probability;
+        }
+
+        @Override
+        public String toString(){
+            return "Tranition: " + source.toString() + ", " + destination.toString() + ", " + probability;
         }
     }
 }

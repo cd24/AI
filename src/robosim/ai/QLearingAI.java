@@ -9,15 +9,17 @@ import java.util.HashMap;
 
 public class QLearingAI implements Controller {
     HashMap<QState, HashMap<QLearner.Transition, Double>> transitionCounts;
+    double[][] transitCounts; //Source, Destination;
     QLearner learner;
     QState previous;
     Action lastAction;
-    public static final double close = 0.5, middle = 2.0, far = 4.0;
+    public static final double close = 25, middle = 50, far = 100;
     double learningRate = 0.3, discount = 0.1;
 
     @Override
     public void control(Simulator sim) {
         QState current = getState(sim);
+        System.out.println(sim.findClosest());
 
         if (learner == null){
             transitionCounts = new HashMap<>();
@@ -60,13 +62,13 @@ public class QLearingAI implements Controller {
     public void updateData(QState current){
         if (previous == null){
             previous = current;
+            transitCounts = new double[previous.numStates()][previous.numStates()];
             return;
         }
         HashMap<QLearner.Transition, Double> values = transitionCounts.getOrDefault(previous, new HashMap<>());
         QLearner.Transition trans = new QLearner.Transition(previous, current, 0);
-        double value = values.getOrDefault(trans, 0.0) + 1;
-        values.put(trans, value);
-        learner.updateMarkovWithData(current, values);
+        transitCounts[previous.index()][current.index()] += 1;
+        learner.updateMarkovWithData(current, transitCounts);
         transitionCounts.put(previous, values); // it is important to note that I have stopped caring about memory pressures at this point.
     }
 }
