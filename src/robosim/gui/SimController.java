@@ -65,7 +65,8 @@ public class SimController {
 		start.setOnAction(event -> {
 			try {
 				Controller controller = ais.newInstanceOf(ai.getSelectionModel().getSelectedItem());
-				if (timer != null) {timer.stop();}
+				halt();
+				map.reset();
 				timer = new AnimationTimer() {
 					long next = 0;
 					@Override
@@ -90,7 +91,7 @@ public class SimController {
 			}
 		});
 		
-		stop.setOnAction(event -> timer.stop());
+		stop.setOnAction(event -> halt());
 		
 		ais = new AIReflector<>(Controller.class, "robosim.ai");
 		for (String typeName: ais.getTypeNames()) {
@@ -103,5 +104,9 @@ public class SimController {
 		total.setEditable(false);
 		collisions.setEditable(false);
 		forward.setEditable(false);
+	}
+	
+	void halt() {
+		if (timer != null) timer.stop();
 	}
 }

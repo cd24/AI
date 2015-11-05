@@ -16,13 +16,13 @@ public class QLearner {
     HashMap<QState, HashMap<Action, Double>> values;
     HashMap<QState, ArrayList<Transition>> transitions;
     QState[] states;
-    double learning_rate, discount, exploration = 0.3;
+    double learning_rate, discount, exploration = 0.1;
     Random random = new Random();
     public QLearner(QState current, double learning_rate, double discount){
         this.current = current;
         this.discount = discount;
         this.learning_rate = learning_rate;
-        this.states = new QState[]{QState.MIDDLE, QState.NEAR, QState.FAR};
+        this.states = new QState[]{QState.BLOCKED, QState.MIDDLE, QState.NEAR, QState.FAR};
         this.values = new HashMap<>();
         this.transitions = new HashMap<>();
 
@@ -71,6 +71,7 @@ public class QLearner {
                         learning_rate*(reward + (discount*expectedRow.getOrDefault(action, 0.0)));
         subset.put(action, value);
         values.put(state, subset);
+        current = state;
     }
 
     public QState getExpectedState(QState state, Action a){

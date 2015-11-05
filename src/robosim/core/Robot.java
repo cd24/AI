@@ -1,5 +1,6 @@
 package robosim.core;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class Robot extends SimObject {
@@ -23,6 +24,17 @@ public class Robot extends SimObject {
 	
 	@Override
 	public Color getColor() {return Color.RED;}
+	
+	@Override
+	public void render(GraphicsContext gc, Color override) {
+		super.render(gc, override);
+		gc.setFill(Color.YELLOW);
+		double x1 = getX() + getRadius() * Math.cos(heading - SONAR_WIDTH);
+		double y1 = getY() + getRadius() * Math.sin(heading - SONAR_WIDTH);
+		double x2 = getX() + getRadius() * Math.cos(heading + SONAR_WIDTH);
+		double y2 = getY() + getRadius() * Math.sin(heading + SONAR_WIDTH);
+		gc.fillPolygon(new double[]{getX(), x1, x2}, new double[]{getY(), y1, y2}, 3);
+	}
 	
 	public double getHeading() {return heading;}
 	
@@ -56,6 +68,8 @@ public class Robot extends SimObject {
 	}
 	
 	public boolean withinSonar(SimObject other) {
-		return Math.abs(this.angularDistance(other) - heading) <= SONAR_WIDTH;
+		double angleDist = this.angularDistance(other);
+		double angleDiff = Math.atan2(Math.sin(angleDist - heading), Math.cos(angleDist - heading));		
+		return Math.abs(angleDiff) <= SONAR_WIDTH;
 	}
 }

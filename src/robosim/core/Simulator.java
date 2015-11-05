@@ -18,6 +18,10 @@ public class Simulator {
 		this.width = width;
 		this.height = height;
 		bot = new Robot(width/2, height/2, 0);
+		reset();
+	}
+	
+	public void reset() {
 		wasHit = false;
 		stats = new Histogram<>();
 	}
@@ -25,6 +29,7 @@ public class Simulator {
 	public void add(SimObject obj) {
 		if (obj instanceof Robot) {
 			bot = (Robot)obj;
+			reset();
 		} else {
 			objects.add(obj);
 		}
@@ -37,15 +42,10 @@ public class Simulator {
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		
-		render(gc, bot, bot.getColor());
+		bot.render(gc);
 		for (SimObject obj: objects) {
-			render(gc, obj, bot.withinSonar(obj) ? Color.YELLOW : obj.getColor());
+			obj.render(gc, bot.withinSonar(obj) ? Color.YELLOW : obj.getColor());
 		}
-	}
-	
-	private void render(GraphicsContext gc, SimObject obj, Color color) {
-		gc.setFill(color);
-		gc.fillOval(obj.getX() - obj.getRadius(), obj.getY() - obj.getRadius(), obj.getRadius() * 2, obj.getRadius() * 2);
 	}
 	
 	public boolean inBounds(SimObject obj) {
