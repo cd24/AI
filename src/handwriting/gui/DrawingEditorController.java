@@ -313,7 +313,7 @@ public class DrawingEditorController {
 	void resetTable(SampleData testData, Histogram<String> correct, Histogram<String> incorrect) {
 		resultTable.getItems().clear();
 		for (String label: testData.allLabels()) {
-			resultTable.getItems().add(new Result(label, correct.getCountFor(label), incorrect.getCountFor(label)));
+			resultTable.getItems().add(new Result(label, correct.getCountFor(label).intValue(), incorrect.getCountFor(label).intValue()));
 		}
 	}
 	

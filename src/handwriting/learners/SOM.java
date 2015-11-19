@@ -14,7 +14,7 @@ public class SOM implements RecognizerAI {
     int iterations = 10, map_height = 10, map_width = 10;
     @Override
     public void train(SampleData data, ArrayBlockingQueue<Double> progress) throws InterruptedException {
-        System.out.print("Training SOM... actually" + "\r");
+        System.out.print("Training SOMText... actually" + "\r");
         Drawing sample = data.getDrawing(0);
         double doneness = 0;
         map_height = 2 * data.numLabels();

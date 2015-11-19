@@ -74,11 +74,11 @@ public class Simulator {
 		stats.bump(wasHit ? "Collisions" : getAngularVelocity() == 0 && getTranslationalVelocity() > 0 ? "Forward" : "Other");
 	}
 	
-	public int getTotalMoves() {return stats.getTotalCounts();}
+	public Double getTotalMoves() {return stats.getTotalCounts();}
 	
-	public int getForwardMoves() {return stats.getCountFor("Forward");}
+	public double getForwardMoves() {return stats.getCountFor("Forward");}
 	
-	public int getCollisions() {return stats.getCountFor("Collisions");}
+	public double getCollisions() {return stats.getCountFor("Collisions");}
 	
 	public boolean wasHit() {return wasHit;}
 	

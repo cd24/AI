@@ -13,7 +13,8 @@ public class QLearingAI implements Controller {
     QLearner learner;
     QState previous;
     Action lastAction;
-    double learningRate = 0.3, discount = 0.1;
+    double learningRate = 0.1, discount = 0.05, exploration = 0.06, explorationCap = 0.5;
+    double explorationDecay = 0.01, learningDecay = 0.001, learningFloor = 0.01, explorationFloor = 0.01;
 
     @Override
     public void control(Simulator sim) {
@@ -23,6 +24,7 @@ public class QLearingAI implements Controller {
         if (learner == null){
             transitionCounts = new HashMap<>();
             learner = new QLearner(current, learningRate, discount);
+            learner.exploration = exploration;
         }
         if (previous == null){
             previous = current;
@@ -35,6 +37,10 @@ public class QLearingAI implements Controller {
         if (sim.wasHit()){
             learner.updateValue(current, currentAction, -learningRate);
             learner.updateValue(previous, lastAction, -learningRate);
+            if (learner.exploration < explorationCap) {
+                learner.exploration += 0.1 * exploration;
+                learner.learning_rate += learningDecay*learningRate;
+            }
         }
         else if (lastAction == Action.FORWARD){
             learner.updateValue(previous, lastAction, learningRate);
@@ -45,6 +51,10 @@ public class QLearingAI implements Controller {
         previous = current;
         lastAction = currentAction;
         updateData(current);
+        if (learner.learning_rate > learningFloor)
+            learner.learning_rate -= (learner.learning_rate*learningDecay);
+        if (learner.exploration > explorationFloor)
+            learner.exploration -= (learner.exploration * explorationDecay);
     }
 
     public QState getState(Simulator sim){

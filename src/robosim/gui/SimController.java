@@ -77,16 +77,15 @@ public class SimController {
 							map.move();
 							map.drawOn(canvas);
 							Platform.runLater(() -> {
-								total.setText(Integer.toString(map.getTotalMoves()));
-								forward.setText(Integer.toString(map.getForwardMoves()));
-								collisions.setText(Integer.toString(map.getCollisions()));
+								total.setText(Integer.toString(map.getTotalMoves().intValue()));
+								forward.setText(Double.toString(map.getForwardMoves()));
+								collisions.setText(Double.toString(map.getCollisions()));
 							});
 						}
 					}
 				};
 				timer.start();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});

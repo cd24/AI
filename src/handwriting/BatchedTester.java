@@ -5,8 +5,6 @@ import handwriting.core.RecognizerAI;
 import handwriting.core.SampleData;
 import handwriting.gui.Result;
 import handwriting.learners.*;
-import maze.gui.AIReflector;
-import planner.core.Domain;
 import search.core.Duple;
 import search.core.Histogram;
 import search.core.Triple;
@@ -14,8 +12,6 @@ import search.core.Triple;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
 
@@ -87,8 +83,8 @@ public class BatchedTester {
         Double percent = results.getThird();
         writer.write(title + "\n" + percent + " Correct\n");
         for (String label : data.allLabels()){
-            Result res = new Result(label, correct.getCountFor(label), incorrect.getCountFor(label));
-            writer.write(res.labelProperty() + ", " + res.percentProperty() + ", " + res.successProperty() + ", " + res.failureProperty() + "\n");
+            //Result res = new Result(label, correct.getCountFor(label), incorrect.getCountFor(label));
+            //writer.write(res.labelProperty() + ", " + res.percentProperty() + ", " + res.successProperty() + ", " + res.failureProperty() + "\n");
         }
     }
 

@@ -1,7 +1,6 @@
 package handwriting.learners.som;
 
 import handwriting.core.Drawing;
-import handwriting.learners.SOM;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
