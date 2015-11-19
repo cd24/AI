@@ -41,6 +41,6 @@ public class SimpleTester {
 
 	public static void show(String label, double correct, double total) {
 		double ratio = 100.0 * correct / total;
-		System.out.printf("%s: %d/%d (%4.2f%%)\n", label, correct, total, ratio);
+		System.out.printf("%s: %d/%d (%4.2f%%)\n", label, (int)correct, (int)total, ratio);
 	}
 }
