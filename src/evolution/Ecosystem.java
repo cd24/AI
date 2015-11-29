@@ -3,10 +3,14 @@ package evolution;
 import handwriting.core.Drawing;
 import search.core.Duple;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.PriorityQueue;
 import java.util.Random;
 
 public class Ecosystem {
+    String outPath = System.getProperty("os.home") + "Desktop/EvolutionResults.csv";
     int num_animals = 10000,
         num_generation = 1000,
         carry_over = (int) (0.1 * num_animals);
@@ -30,11 +34,27 @@ public class Ecosystem {
     }
 
     public void run() {
-        //todo: run
         for (int i = 0; i < num_generation; ++i) {
             evaluate();
             this.animals = nextGeneration();
             repopulate();
+        }
+        try {
+            printWeights();
+        } catch (FileNotFoundException e) {
+            System.out.println("Couldn't write to file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void printWeights() throws FileNotFoundException {
+        MutableMLP[] strongest = nextGeneration();
+        File saveLoc = new File(outPath);
+        PrintWriter writer = new PrintWriter(saveLoc);
+        for (int i = 0; i < carry_over; ++i){
+            MutableMLP out = strongest[i];
+            writer.println(i);
+            writer.println(out.toString());
         }
     }
 
@@ -50,7 +70,7 @@ public class Ecosystem {
                 animals[i] = animals[i].crossover(parent2);
             }
             if (magicNumber < mutationRate)
-                animals[i].mutate();
+                animals[i] = animals[i].mutate();
         }
     }
 
@@ -166,5 +186,11 @@ public class Ecosystem {
         splits[0] = new Duple<>(firstHalfA, firstHalfB);
         splits[1] = new Duple<>(secondHalfA, secondHalfB);
         return splits;
+    }
+
+    public static void main(String[] args){
+        //read in drawing files
+        //build ecosystem
+        //run
     }
 }

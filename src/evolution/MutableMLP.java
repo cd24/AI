@@ -51,4 +51,23 @@ public class MutableMLP extends MultiLayerBitwise {
         }
         return index;
     }
+
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        builder.append("Layer 1");
+        for (int i = 0; i < perceptron.inputToHidden.weights.length; ++i){
+            for (int j = 0; j < perceptron.inputToHidden.weights[0].length; ++j){
+                builder.append(perceptron.inputToHidden.weights[i][j] + ",");
+            }
+            builder.append("\n");
+        }
+        builder.append("Layer 2");
+        for (int i = 0; i < perceptron.hiddenToOutput.weights.length; ++i){
+            for (int j = 0; j < perceptron.hiddenToOutput.weights[0].length; ++j){
+                builder.append(perceptron.hiddenToOutput.weights[i][j] + ",");
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
+    }
 }
