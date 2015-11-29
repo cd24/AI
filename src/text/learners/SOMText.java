@@ -12,19 +12,20 @@ import text.learners.SelfOrgText;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class SOMText implements TextLearner {
-    SelfOrgText map = new SelfOrgText(30, 30);
+    SelfOrgText map = new SelfOrgText(10, 10);
     int iterations = 5;
+
     @Override
     public void train(Sentence words, String lbl) {
         for (int i = 0; i < iterations; ++i){
             map.train(words.wordCounts());
-            map.applyLabels(words.wordCounts(), lbl);
-            map.setRemainingLabels();
         }
+        map.applyLabels(words.wordCounts(), lbl);
     }
 
     @Override
     public String classify(Sentence words) {
+        map.setRemainingLabels();
         return map.classify(words.wordCounts());
     }
 

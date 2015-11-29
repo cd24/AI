@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class MultiLayerLearner implements RecognizerAI {
-    MultiLayer perceptron;
+    public MultiLayer perceptron;
     protected int num_inputs = 1600,
             num_hidden = num_hidden(),
             num_outputs = num_out(),
@@ -122,5 +122,9 @@ public class MultiLayerLearner implements RecognizerAI {
 
     public double training_rate(){
         return 0.1;
+    }
+
+    public MultiLayerLearner getClone() throws CloneNotSupportedException {
+        return (MultiLayerLearner) this.clone();
     }
 }

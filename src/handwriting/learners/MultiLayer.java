@@ -1,7 +1,7 @@
 package handwriting.learners;
 
 public class MultiLayer extends PerceptronNet {
-    private Perceptron inputToHidden, hiddenToOutput;
+    public Perceptron inputToHidden, hiddenToOutput;
     
     // Invariant: 
     //   inputToHidden.numOutputNodes() == hiddenToOutput.numInputNodes()

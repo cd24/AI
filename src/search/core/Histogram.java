@@ -3,10 +3,11 @@ package search.core;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Random;
 
 public class Histogram<T> implements Iterable<T> {
 	private HashMap<T,Double> counts = new HashMap<>();
-
+	private Random rand = new Random();
 	public Histogram() {}
 	
 	public Histogram(Histogram<T> other) {
@@ -61,11 +62,11 @@ public class Histogram<T> implements Iterable<T> {
 		return getCountFor(element)/getTotalCounts();
 	}
 
-	public Histogram<T> combine(Histogram<T> other, double cominationFactor){
+	public Histogram<T> combine(Histogram<T> other, double combinationFactor){
 		Histogram<T> child = new Histogram<>();
 		for (T key : other){
-			double newCounts = Math.abs(other.getCountFor(key) - getCountFor(key))*cominationFactor + getCountFor(key);
-			child.bumpBy(key, newCounts);
+			double newCount = (other.getCountFor(key) - getCountFor(key))*combinationFactor + getCountFor(key);
+			child.bumpBy(key, newCount);
 		}
 		return child;
 	}
@@ -88,7 +89,6 @@ public class Histogram<T> implements Iterable<T> {
 		for (Entry<T, Double> element : counts.entrySet()){
 			distance += Math.pow(element.getValue() - other.getCountFor(element.getKey()), 2);
 		}
-		distance += sumExcluded(other);
 		return distance;
 	}
 

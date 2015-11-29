@@ -32,9 +32,10 @@ public class NaiveBayes implements TextLearner {
 		// Use the counted values for classification.
 		double bestOdds = Double.MIN_VALUE;
 		String bestLabel = "UNKOWN";
+		int i = 0;
 		for (String word : words){
 			for (String label: labelCounts){
-				double evidenceInCategory = (counts.get(label).probabilityOf(word) + 1)/(counts.get(label).getTotalCounts() + wordCounts.getTotalCounts());
+				double evidenceInCategory = (counts.get(label).getCountFor(word) + 1)/(counts.get(label).getTotalCounts() + wordCounts.getTotalCounts());
 				double category = labelCounts.probabilityOf(label);
 				double evidence = wordCounts.probabilityOf(word);
 				if (evidence > 0) {

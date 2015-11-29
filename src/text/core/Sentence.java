@@ -24,7 +24,7 @@ public class Sentence implements Iterable<String> {
 	public Histogram<String> wordCounts() {
 		Histogram<String> result = new Histogram<String>();
 		for (String word: sentence) {
-			if (!(PURGE_STOP_WORDS && bannedWords.contains(word))) result.bump(word);
+			if (!(PURGE_STOP_WORDS && bannedWords.contains(word)) || !(PURGE_STOP_WORDS && word.length() < 2)) result.bump(word);
 		}
 		return result;
 	}

@@ -2,12 +2,12 @@ package handwriting.learners;
 
 public class Perceptron extends PerceptronNet {
     // First index is the input; second index is the output
-    private double[][] weights;
+    public double[][] weights;
     private double[][] deltas;
     private double[] outputs;
     private double[] errors;
     
-    private int numInputs, numOutputs;
+    public int numInputs, numOutputs;
     
     protected double output(int i) {return outputs[i];}
     protected double error(int i) {return errors[i];}

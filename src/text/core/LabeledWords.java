@@ -27,6 +27,22 @@ public class LabeledWords implements Iterable<String> {
 		}
 		return set;
 	}
+
+	public static LabeledWords farmData(File src) throws FileNotFoundException{
+		LabeledWords set = new LabeledWords();
+		String text = Funcs.fromFile(src);
+		int counter = 0;
+		for (String line: text.split("\\n")) {
+			String[] info = line.split("\\s");
+			if (info.length >= 2 && info.length < 6000 && info[1].length() > 0) {
+				String lbl = info[0].equals("-1") ? "NEGATIVE" : "POSITIVE";
+				set.add(new Sentence(line.substring(2)), lbl);
+				counter += 1;
+				System.out.print("Reading: " + counter + "\r");
+			}
+		}
+		return set;
+	}
 	
 	public ArrayList<Sentence> allWith(String lbl) {
 		ArrayList<Sentence> result = new ArrayList<>();
