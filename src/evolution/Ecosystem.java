@@ -37,7 +37,8 @@ public class Ecosystem {
 
     public void run() {
         for (int i = 0; i < num_generation; ++i) {
-            System.out.print("Generation: " + i + " of " + num_generation + ": " + i/num_generation + "% \r");
+            double progress = ((double)i/num_generation) * 100;
+            System.out.print("\rGeneration: " + i + " of " + num_generation + ": " + progress + "%");
             evaluate();
             this.animals = nextGeneration();
             repopulate();
