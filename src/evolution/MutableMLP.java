@@ -1,5 +1,8 @@
 package evolution;
 
+import handwriting.core.Drawing;
+import handwriting.core.SampleData;
+import handwriting.learners.MultiLayer;
 import handwriting.learners.MultiLayerBitwise;
 
 import java.lang.reflect.Array;
@@ -19,6 +22,34 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
         child.perceptron.inputToHidden = other.perceptron.inputToHidden;
         child.perceptron.hiddenToOutput = this.perceptron.hiddenToOutput;
         return child;
+    }
+
+    public void train(SampleData data){
+        labels = setToArrayList(data.allLabels());
+        perceptron = new MultiLayer(1600, num_hidden(), num_out());
+        training_iter = 50;
+        double prog = 0;
+        for (int i = 0; i < training_iter; ++i){
+            for (String label : labels){
+                double[] outs = getOutputForLabel(label);
+                int num_drawings = data.numDrawingsFor(label);
+                for (int k = 0; k < num_drawings; ++k){
+                    Drawing drawing = data.getDrawing(label, k);
+                    double[] inputs = getInputs(drawing);
+                    perceptron.train(inputs, outs, rate);
+                }
+            }
+            perceptron.updateWeights();
+        }
+    }
+
+    private double[] getOutputForLabel(String label){
+        double[] outs = cleanArr(8);
+        int index = labels.indexOf(label);
+        for (int i = 0; i < 8; ++i){
+            outs[i] = (index & (1 << i)) >> i;
+        }
+        return outs;
     }
 
     public void setLabels(ArrayList<String> labels){

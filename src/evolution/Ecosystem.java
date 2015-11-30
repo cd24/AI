@@ -7,11 +7,14 @@ import search.core.Duple;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Ecosystem {
-    String outPath = System.getProperty("os.home") + "Desktop/EvolutionResults.csv";
-    int num_animals = 10000,
+    String outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults.csv";
+    int num_animals = 1000,
         num_generation = 1000,
         carry_over = (int) (0.1 * num_animals);
     MutableMLP[] animals;
@@ -28,14 +31,23 @@ public class Ecosystem {
         ranking = new double[num_animals];
         this.allLabels = allLabels;
         this.testData = data;
+        SampleData dat = new SampleData();
+        for (int i = 0; i < this.testData.length; ++i){
+            dat.addDrawing(this.testData[i].getFirst(), this.testData[i].getSecond());
+        }
         for (int i = 0; i < size; ++i){
+            double percent = ((double)i/size) * 100;
+            System.out.print("\rBuilding Ecosystem... " + percent + "%");
             animals[i] = new MutableMLP();
+            animals[i].train(dat);
         }
         random = new Random();
         setLabels();
     }
 
     public void run() {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        System.out.println("Started at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
             double progress = ((double)i/num_generation) * 100;
             System.out.print("\rGeneration: " + i + " of " + num_generation + ": " + progress + "%");
@@ -43,12 +55,14 @@ public class Ecosystem {
             this.animals = nextGeneration();
             repopulate();
         }
+        System.out.println("Finished at: " + dateFormat.format(new Date()));
         try {
             printWeights();
         } catch (FileNotFoundException e) {
             System.out.println("Couldn't write to file.");
             e.printStackTrace();
         }
+        report();
     }
 
     public void printWeights() throws FileNotFoundException {
@@ -59,6 +73,13 @@ public class Ecosystem {
             MutableMLP out = strongest[i];
             writer.println(i);
             writer.println(out.toString());
+        }
+    }
+
+    public void report(){
+        MutableMLP[] strongest = nextGeneration();
+        for (int i = 0; i < carry_over; ++i){
+            System.out.println(i + "; " + evaluate(strongest[i]));
         }
     }
 
@@ -210,14 +231,17 @@ public class Ecosystem {
         Duple<String, Drawing>[] drawigns = info.getFirst();
         String[] labels = info.getSecond();
         //build ecosystem
-        Ecosystem ecosystem = new Ecosystem(drawigns.length, drawigns, labels);
+        System.out.print("\rBuilding Ecosystem...");
+        Ecosystem ecosystem = new Ecosystem(1000, drawigns, labels);
         //run
+        System.out.print("\rRunning...");
         ecosystem.run();
     }
 
     public static Duple<Duple<String, Drawing>[], String[]> getDrawings() throws FileNotFoundException {
         String path = System.getProperty("user.dir") + File.separator+ "PerceptronTrainingData" + File.separator +"TrainingData8";
         File data = new File(path);
+        System.out.print("Loading Data...");
         SampleData loaded = SampleData.parseDataFrom(data);
         Duple<String, Drawing>[] drawings = new Duple[loaded.numDrawings()];
         for (int i = 0; i < loaded.numDrawings(); ++i){
