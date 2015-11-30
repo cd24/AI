@@ -19,7 +19,7 @@ public class Ecosystem {
         carry_over = (int) (0.1 * num_animals);
     MutableMLP[] animals;
     double[] ranking;
-    double mutationRate = 0.1, crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
+    double mutationRate = 0.3, crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
     Duple<String, Drawing>[] testData;
     Random random;
@@ -55,6 +55,7 @@ public class Ecosystem {
             this.animals = nextGeneration();
             repopulate();
         }
+        System.out.print("\n");
         System.out.println("Finished at: " + dateFormat.format(new Date()));
         try {
             printWeights();
@@ -140,7 +141,7 @@ public class Ecosystem {
     }
 
     private double evaluate(MutableMLP animal){
-        int num_correct = 0;
+        double num_correct = 0;
         for (int i = 0; i < testData.length; ++i){
             Duple<String, Drawing> element = testData[i];
             String answer = animal.classify(element.getSecond());

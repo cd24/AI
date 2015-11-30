@@ -4,6 +4,7 @@ import handwriting.core.Drawing;
 import handwriting.core.SampleData;
 import handwriting.learners.MultiLayer;
 import handwriting.learners.MultiLayerBitwise;
+import search.core.Duple;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
     public void train(SampleData data){
         labels = setToArrayList(data.allLabels());
         perceptron = new MultiLayer(1600, num_hidden(), num_out());
-        training_iter = 50;
+        training_iter = 0;
         double prog = 0;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){
@@ -58,14 +59,18 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
 
     public MutableMLP mutate(){
         double layerRandom = Math.random();
-        int indexRandom = getMutateIndex(layerRandom);
+        Duple<Integer, Integer> indexRandom = getMutateIndex(layerRandom);
         try {
             MutableMLP clone = (MutableMLP) this.clone();
             if (layerRandom < layerThreshold) {
                 double[][] weightsTemp = clone.perceptron.inputToHidden.weights;
-                for (int i = 0; i < weightsTemp[0].length; ++i) {
-                    weightsTemp[indexRandom][i] += Math.random();
-                }
+                weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
+                clone.perceptron.inputToHidden.weights = weightsTemp;
+            }
+            else {
+                double[][] weightsTemp = clone.perceptron.hiddenToOutput.weights;
+                weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
+                clone.perceptron.hiddenToOutput.weights = weightsTemp;
             }
             return clone;
         } catch (CloneNotSupportedException e) {
@@ -74,15 +79,17 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
         }
     }
 
-    public int getMutateIndex(double layer){
-        int index = 0;
+    public Duple<Integer, Integer> getMutateIndex(double layer){
+        Integer index = 0, index2 = 0;
         if (layer < layerThreshold){
             index = random.nextInt(this.perceptron.numInputNodes());
+            index2 = random.nextInt(this.perceptron.numHiddenNodes());
         }
         else {
             index = random.nextInt(this.perceptron.numHiddenNodes());
+            index2 = random.nextInt(this.perceptron.numOutputNodes());
         }
-        return index;
+        return new Duple(index, index2);
     }
 
     public String toString(){
