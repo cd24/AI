@@ -1,13 +1,13 @@
 package evolution;
 
 import handwriting.core.Drawing;
+import handwriting.core.SampleData;
 import search.core.Duple;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 
 public class Ecosystem {
     String outPath = System.getProperty("os.home") + "Desktop/EvolutionResults.csv";
@@ -18,23 +18,26 @@ public class Ecosystem {
     double[] ranking;
     double mutationRate = 0.1, crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
-    Duple<Drawing, String>[] testData;
+    Duple<String, Drawing>[] testData;
     Random random;
 
-    public Ecosystem(int size, Duple<Drawing, String>[] data, String[] allLabels){
+    public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels){
         this.num_animals = size;
-        animals = new MutableMLP[size];
-        ranking = new double[size];
+        this.carry_over = (int) (0.1 * num_animals);
+        animals = new MutableMLP[num_animals];
+        ranking = new double[num_animals];
         this.allLabels = allLabels;
         this.testData = data;
         for (int i = 0; i < size; ++i){
             animals[i] = new MutableMLP();
         }
         random = new Random();
+        setLabels();
     }
 
     public void run() {
         for (int i = 0; i < num_generation; ++i) {
+            System.out.print("Generation: " + i + " of " + num_generation + ": " + i/num_generation + "% \r");
             evaluate();
             this.animals = nextGeneration();
             repopulate();
@@ -61,60 +64,72 @@ public class Ecosystem {
     public void repopulate(){
         //assume top ten are correct
         //naive implementation.  Doesn't take into account what each is good at.
-        int upperBound = (int) (0.1 * animals.length);
         for (int i = carry_over; i < animals.length; ++i){
             double magicNumber = Math.random();
-            animals[i] = animals[random.nextInt(upperBound)];
+            animals[i] = animals[random.nextInt(carry_over)];
             if (magicNumber < crossoverRate){
-                MutableMLP parent2 = animals[random.nextInt(upperBound)];
+                MutableMLP parent2 = animals[random.nextInt(carry_over)];
                 animals[i] = animals[i].crossover(parent2);
             }
             if (magicNumber < mutationRate)
                 animals[i] = animals[i].mutate();
         }
+        setLabels();
     }
 
     public MutableMLP[] nextGeneration(){
         MutableMLP[] generation = new MutableMLP[animals.length];
         for (int i = 0; i < carry_over; ++i){
-            generation[i] = animals[getSampleIndex()];
+            int sampleIndex = getSampleIndex();
+            if (sampleIndex >= 128)
+                sampleIndex = 127;
+            generation[i] = animals[sampleIndex];
         }
         return generation;
     }
 
+    public void setLabels(){
+        ArrayList<String> label = new ArrayList<>();
+        Collections.addAll(label, allLabels);
+        for (int i = 0; i < num_animals; ++i){
+            if (animals[i] != null)
+                animals[i].setLabels(label);
+        }
+    }
+
     public void evaluate(){
         for (int i = 0; i < this.num_animals; ++i){
-            ranking[i] = evaluate(animals[i]);
+            animals[i].score = evaluate(animals[i]);
         }
-        Duple<MutableMLP[], double[]> sorted = sort(animals, ranking);
-        this.animals = sorted.getFirst();
-        this.ranking = sorted.getSecond();
+        Arrays.sort(animals);
     }
 
     public int getSampleIndex(){
         double sampleLocal = Math.random();
+        int index = 0;
         if (sampleLocal < topTenChance)
-            return random.nextInt(animals.length/10);
+            index = random.nextInt(animals.length/10);
         else if (sampleLocal < topFiftyChance)
-            return random.nextInt(animals.length/2);
+            index = random.nextInt(animals.length/2);
         else {
-            return random.nextInt(animals.length);
+            index = random.nextInt(animals.length - 1);
         }
+        return index;
     }
 
     private double evaluate(MutableMLP animal){
         int num_correct = 0;
         for (int i = 0; i < testData.length; ++i){
-            Duple<Drawing, String> element = testData[i];
-            String answer = animal.classify(element.getFirst());
-            if (answer.equals(element.getSecond()))
+            Duple<String, Drawing> element = testData[i];
+            String answer = animal.classify(element.getSecond());
+            if (answer.equals(element.getFirst()))
                 num_correct++;
         }
         return num_correct/testData.length;
     }
 
     public Duple<MutableMLP[], double[]> sort(MutableMLP[] animal, double[] rankings){
-        if (animal.length == 0){
+        if (animal.length == 1){
             return new Duple<>(animal, rankings);
         }
         else {
@@ -168,18 +183,18 @@ public class Ecosystem {
         return new Duple<>(newAnimals, newRankings);
     }
 
-    public Duple<MutableMLP[], double[]>[] split(MutableMLP[] animals, double[] rankings){
-        int split = animals.length/2;
-        MutableMLP[] firstHalfA = new MutableMLP[split], secondHalfA = new MutableMLP[animals.length - split];
-        double[] firstHalfB = new double[split], secondHalfB = new double[animals.length - split];
-        for (int i = 0; i < animals.length; ++i){
+    public Duple<MutableMLP[], double[]>[] split(MutableMLP[] ans, double[] rankings){
+        int split = ans.length/2;
+        MutableMLP[] firstHalfA = new MutableMLP[split], secondHalfA = new MutableMLP[ans.length - split];
+        double[] firstHalfB = new double[split], secondHalfB = new double[ans.length - split];
+        for (int i = 0; i < ans.length; ++i){
             if (i < split){
-                firstHalfA[i] = animals[i];
+                firstHalfA[i] = ans[i];
                 firstHalfB[i] = rankings[i];
             }
             else {
-                secondHalfA[i] = animals[i];
-                secondHalfB[i] = rankings[i];
+                secondHalfA[i - split] = ans[i];
+                secondHalfB[i - split] = rankings[i];
             }
         }
         Duple<MutableMLP[], double[]>[] splits = new Duple[2];
@@ -188,9 +203,25 @@ public class Ecosystem {
         return splits;
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws FileNotFoundException {
         //read in drawing files
+        Duple<Duple<String, Drawing>[], String[]> info = getDrawings();
+        Duple<String, Drawing>[] drawigns = info.getFirst();
+        String[] labels = info.getSecond();
         //build ecosystem
+        Ecosystem ecosystem = new Ecosystem(drawigns.length, drawigns, labels);
         //run
+        ecosystem.run();
+    }
+
+    public static Duple<Duple<String, Drawing>[], String[]> getDrawings() throws FileNotFoundException {
+        String path = System.getProperty("user.dir") + File.separator+ "PerceptronTrainingData" + File.separator +"TrainingData8";
+        File data = new File(path);
+        SampleData loaded = SampleData.parseDataFrom(data);
+        Duple<String, Drawing>[] drawings = new Duple[loaded.numDrawings()];
+        for (int i = 0; i < loaded.numDrawings(); ++i){
+            drawings[i] = loaded.getLabelAndDrawing(i);
+        }
+        return new Duple<>(drawings, loaded.allLabels().toArray(new String[]{}));
     }
 }

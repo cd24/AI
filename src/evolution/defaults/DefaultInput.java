@@ -12,4 +12,9 @@ public class DefaultInput<T> implements Input<T> {
     public T value(){
         return value;
     }
+
+    @Override
+    public T get() {
+        return this.value;
+    }
 }

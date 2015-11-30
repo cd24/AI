@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
-public class MutableMLP extends MultiLayerBitwise {
+public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableMLP> {
     Random random = new Random();
     double layerThreshold = 0.4;
+    public double score = 0;
+
 
     public MutableMLP crossover(MutableMLP other){
         //simple crossover
@@ -69,5 +71,16 @@ public class MutableMLP extends MultiLayerBitwise {
             builder.append("\n");
         }
         return builder.toString();
+    }
+
+    @Override
+    public int compareTo(MutableMLP o) {
+        return (int) (this.score - o.score);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        MutableMLP newGuy = crossover(this);
+        return newGuy;
     }
 }
