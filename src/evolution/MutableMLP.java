@@ -93,14 +93,14 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
 
     public String toString(){
         StringBuilder builder = new StringBuilder();
-        builder.append("Layer 1");
+        builder.append("Layer 1\n");
         for (int i = 0; i < perceptron.inputToHidden.weights.length; ++i){
             for (int j = 0; j < perceptron.inputToHidden.weights[0].length; ++j){
                 builder.append(perceptron.inputToHidden.weights[i][j] + ",");
             }
             builder.append("\n");
         }
-        builder.append("Layer 2");
+        builder.append("Layer 2\n");
         for (int i = 0; i < perceptron.hiddenToOutput.weights.length; ++i){
             for (int j = 0; j < perceptron.hiddenToOutput.weights[0].length; ++j){
                 builder.append(perceptron.hiddenToOutput.weights[i][j] + ",");
