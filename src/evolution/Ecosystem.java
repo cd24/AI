@@ -16,36 +16,98 @@ public class Ecosystem {
     String outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults.csv";
     int num_animals = 1000,
         num_generation = 1000,
-        carry_over = (int) (0.1 * num_animals);
+        carry_over = (int) (0.1 * num_animals),
+        num_cores = 4;
     MutableMLP[] animals;
     double[] ranking;
     double mutationRate = 0.3, crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
     Duple<String, Drawing>[] testData;
     Random random;
+    ArrayBlockingQueue<MutableMLP> toWork, worked;
+    Thread[] threads = new Thread[num_cores];
 
-    public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels){
+    public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels) {
         this.num_animals = size;
+        this.toWork = new ArrayBlockingQueue<>(this.num_animals);
+        this.worked = new ArrayBlockingQueue<MutableMLP>(this.num_animals);
         this.carry_over = (int) (0.1 * num_animals);
         animals = new MutableMLP[num_animals];
         ranking = new double[num_animals];
         this.allLabels = allLabels;
         this.testData = data;
         SampleData dat = new SampleData();
+
         for (int i = 0; i < this.testData.length; ++i){
             dat.addDrawing(this.testData[i].getFirst(), this.testData[i].getSecond());
         }
-        for (int i = 0; i < size; ++i){
-            double percent = ((double)i/size) * 100;
-            System.out.print("\rBuilding Ecosystem... " + percent + "%");
-            animals[i] = new MutableMLP();
-            animals[i].train(dat);
+
+        createPopulation();
+        populateWorkQueue();
+
+        for (int i = 0; i < num_cores; ++i){
+            Thread trainer = new Thread(()->{
+                while(!this.toWork.isEmpty()) {
+                    try {
+                         MutableMLP worker = toWork.take();
+                        worker.train(dat);
+                        worked.add(worker);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            trainer.start();
+            threads[i] = trainer;
+        }
+
+        while(!threadsFinished()){
+            double percent = ((double)(this.num_animals - this.toWork.size()))/this.num_animals;
+            System.out.print("\rBuilding Ecosystem... " + (percent*100) + "%");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            deloadWork();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         random = new Random();
         setLabels();
     }
 
-    public void run() {
+    public boolean threadsFinished(){
+        for (int i = 0; i < num_cores; ++i){
+            if (threads[i].isAlive())
+                return false;
+        }
+        return true;
+    }
+
+    public void populateWorkQueue(){
+        for (int i = 0; i < this.num_animals; ++i){
+            this.toWork.add(animals[i]);
+        }
+    }
+
+    public void createPopulation(){
+        for (int i = 0; i < this.num_animals; ++i){
+            this.animals[i] = new MutableMLP();
+        }
+    }
+
+    public void deloadWork() throws InterruptedException {
+        for (int i = 0; i < this.num_animals; ++i){
+            animals[i] = this.worked.take();
+        }
+    }
+
+    public void run() throws InterruptedException {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Started at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
@@ -120,10 +182,25 @@ public class Ecosystem {
         }
     }
 
-    public void evaluate(){
-        for (int i = 0; i < this.num_animals; ++i){
-            animals[i].score = evaluate(animals[i]);
+    public void evaluate() throws InterruptedException {
+        populateWorkQueue();
+        for (int i = 0; i < num_cores; ++i){
+            Thread evaluator = new Thread(()->{
+                while(!this.toWork.isEmpty()){
+                    try {
+                        MutableMLP current = toWork.take();
+                        current.score = evaluate(current);
+                        this.worked.add(current);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            evaluator.start();
+            this.threads[i] = evaluator;
         }
+        while(!threadsFinished()){ /* Wait for Threads to Finish */ }
+        deloadWork();
         Arrays.sort(animals);
     }
 
@@ -151,82 +228,7 @@ public class Ecosystem {
         return num_correct/testData.length;
     }
 
-    public Duple<MutableMLP[], double[]> sort(MutableMLP[] animal, double[] rankings){
-        if (animal.length == 1){
-            return new Duple<>(animal, rankings);
-        }
-        else {
-            Duple<MutableMLP[], double[]>[] split = split(animal, rankings);
-            MutableMLP[] left = split[0].getFirst(), right = split[1].getFirst();
-            double[] leftr = split[1].getSecond(), rightr = split[1].getSecond();
-            return combine(sort(left, leftr), sort(right, rightr));
-        }
-    }
-
-    public Duple<MutableMLP[], double[]> combine(Duple<MutableMLP[], double[]> first, Duple<MutableMLP[], double[]> second){
-
-        double[] firstRankings = first.getSecond(),
-                    secondRankings = second.getSecond();
-        MutableMLP[] firstAnimals = first.getFirst(),
-                    secondAnimals = second.getFirst();
-        int fIdx = 0, sIdx = 0, newIdx = 0, totalSize = firstRankings.length + secondRankings.length;
-        double[] newRankings = new double[totalSize];
-        MutableMLP[] newAnimals = new MutableMLP[totalSize];
-        int firstLen = first.getFirst().length,
-            secondLen = second.getFirst().length;
-
-        while(fIdx < firstLen && sIdx < secondLen){
-            double fRank = firstRankings[fIdx], sRank = secondRankings[sIdx];
-            if (fRank < sRank){
-                newRankings[newIdx] = fRank;
-                newAnimals[newIdx] = firstAnimals[fIdx];
-                newIdx++;
-                fIdx++;
-            }
-            else {
-                newRankings[newIdx] = sRank;
-                newAnimals[newIdx] = secondAnimals[sIdx];
-                newIdx++;
-                sIdx++;
-            }
-        }
-
-        if (firstLen < secondLen){
-            int remainder = secondLen - firstLen;
-            for (int i = 0; i < remainder; ++i){
-                newAnimals[firstLen + i] = secondAnimals[firstLen + i];
-            }
-        }
-        else {
-            int remainder = firstLen - secondLen;
-            for (int i = 0; i < remainder; ++i){
-                newAnimals[secondLen + i] = secondAnimals[secondLen + i];
-            }
-        }
-        return new Duple<>(newAnimals, newRankings);
-    }
-
-    public Duple<MutableMLP[], double[]>[] split(MutableMLP[] ans, double[] rankings){
-        int split = ans.length/2;
-        MutableMLP[] firstHalfA = new MutableMLP[split], secondHalfA = new MutableMLP[ans.length - split];
-        double[] firstHalfB = new double[split], secondHalfB = new double[ans.length - split];
-        for (int i = 0; i < ans.length; ++i){
-            if (i < split){
-                firstHalfA[i] = ans[i];
-                firstHalfB[i] = rankings[i];
-            }
-            else {
-                secondHalfA[i - split] = ans[i];
-                secondHalfB[i - split] = rankings[i];
-            }
-        }
-        Duple<MutableMLP[], double[]>[] splits = new Duple[2];
-        splits[0] = new Duple<>(firstHalfA, firstHalfB);
-        splits[1] = new Duple<>(secondHalfA, secondHalfB);
-        return splits;
-    }
-
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         //read in drawing files
         Duple<Duple<String, Drawing>[], String[]> info = getDrawings();
         Duple<String, Drawing>[] drawigns = info.getFirst();
