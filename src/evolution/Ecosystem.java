@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class Ecosystem {
     String outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults.csv";
@@ -232,12 +233,17 @@ public class Ecosystem {
 
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         //read in drawing files
+        Double crossoverRate = Double.parseDouble(args[0]), mutationRate = Double.parseDouble(args[1]);
+
         Duple<Duple<String, Drawing>[], String[]> info = getDrawings();
         Duple<String, Drawing>[] drawigns = info.getFirst();
         String[] labels = info.getSecond();
         //build ecosystem
         System.out.print("\rBuilding Ecosystem...");
         Ecosystem ecosystem = new Ecosystem(1000, drawigns, labels);
+        ecosystem.mutationRate = mutationRate;
+        ecosystem.crossover_enabled = crossoverRate > 0;
+        ecosystem.crossoverRate = crossoverRate;
         //run
         System.out.print("\rRunning...");
         ecosystem.run();

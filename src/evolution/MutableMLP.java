@@ -16,13 +16,39 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
     double layerThreshold = 0.4;
     public double score = 0;
 
-
+    /*
     public MutableMLP crossover(MutableMLP other){
         //simple crossover
         MutableMLP child = new MutableMLP();
         child.perceptron.inputToHidden = other.perceptron.inputToHidden;
         child.perceptron.hiddenToOutput = this.perceptron.hiddenToOutput;
         return child;
+    }
+    */
+
+    public MutableMLP crossover(MutableMLP other){
+        try {
+            MutableMLP child = (MutableMLP) this.clone();
+            int severity = random.nextInt(this.num_hidden);
+            for (int i = 0; i < severity; ++i){
+                int hiddenIndex = random.nextInt(this.perceptron.numHiddenNodes());
+                child.pullin(hiddenIndex, other);
+            }
+            return child;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void pullin(int hiddenIndex, MutableMLP other){
+        double[][] otherWeights = other.perceptron.inputToHidden.weights;
+        for (int i = 0; i < this.num_inputs; ++i){
+            this.perceptron.inputToHidden.weights[i][hiddenIndex] = otherWeights[i][hiddenIndex];
+        }
+        for (int i = 0; i < this.num_outputs; ++i){
+            this.perceptron.hiddenToOutput.weights[hiddenIndex][i] = otherWeights[hiddenIndex][i];
+        }
     }
 
     public void train(SampleData data){
