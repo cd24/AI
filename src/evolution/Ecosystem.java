@@ -20,12 +20,14 @@ public class Ecosystem {
         num_cores = 4;
     MutableMLP[] animals;
     double[] ranking;
-    double mutationRate = 0.3, crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
+    boolean crossover_enabled = false;
+    double mutationRate = (crossover_enabled ? 0.3 : 0.6), crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
     Duple<String, Drawing>[] testData;
     Random random;
     ArrayBlockingQueue<MutableMLP> toWork, worked;
     Thread[] threads = new Thread[num_cores];
+
 
     public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels) {
         this.num_animals = size;
@@ -152,7 +154,7 @@ public class Ecosystem {
         for (int i = carry_over; i < animals.length; ++i){
             double magicNumber = Math.random();
             animals[i] = animals[random.nextInt(carry_over)];
-            if (magicNumber < crossoverRate){
+            if (magicNumber < crossoverRate && crossover_enabled){
                 MutableMLP parent2 = animals[random.nextInt(carry_over)];
                 animals[i] = animals[i].crossover(parent2);
             }
