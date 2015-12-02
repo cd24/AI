@@ -234,13 +234,14 @@ public class Ecosystem {
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         //read in drawing files
         Double crossoverRate = Double.parseDouble(args[0]), mutationRate = Double.parseDouble(args[1]);
+        Integer population = Integer.parseInt(args[2]);
 
         Duple<Duple<String, Drawing>[], String[]> info = getDrawings();
         Duple<String, Drawing>[] drawigns = info.getFirst();
         String[] labels = info.getSecond();
         //build ecosystem
         System.out.print("\rBuilding Ecosystem...");
-        Ecosystem ecosystem = new Ecosystem(1000, drawigns, labels);
+        Ecosystem ecosystem = new Ecosystem(population, drawigns, labels);
         ecosystem.mutationRate = mutationRate;
         ecosystem.crossover_enabled = crossoverRate > 0;
         ecosystem.crossoverRate = crossoverRate;
