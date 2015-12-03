@@ -20,7 +20,7 @@ public class Ecosystem {
     int num_animals = 1000,
         num_generation = 1000,
         carry_over = (int) (0.1 * num_animals),
-        num_cores = 4;
+        num_cores = Runtime.getRuntime().availableProcessors();
     MutableMLP[] animals;
     double[] ranking;
     boolean crossover_enabled = false;
@@ -30,6 +30,7 @@ public class Ecosystem {
     Random random;
     ArrayBlockingQueue<MutableMLP> toWork, worked;
     Thread[] threads = new Thread[num_cores];
+    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 
     public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels) {
@@ -49,6 +50,7 @@ public class Ecosystem {
 
         createPopulation();
         populateWorkQueue();
+        System.out.println("Environment using " + this.num_cores + " threads for training and evaluation.");
 
         for (int i = 0; i < num_cores; ++i){
             Thread trainer = new Thread(()->{
@@ -72,11 +74,12 @@ public class Ecosystem {
             double percent = ((double)(this.num_animals - this.toWork.size()))/this.num_animals;
             System.out.printf("\rBuilding Ecosystem... %.2f\\%", (percent*100));
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        System.out.println("\rEcosystem finished building  at: " + dateFormat.format(new Date()));
 
         try {
             deloadWork();
@@ -114,11 +117,10 @@ public class Ecosystem {
     }
 
     public void run() throws InterruptedException {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Started at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
             double progress = ((double)i/num_generation) * 100;
-            System.out.print("\rGeneration: " + i + " of " + num_generation + ": " + progress + "%");
+            System.out.printf("\rGeneration %d of %d: %.2f\\% Complete", i, num_generation, progress);
             evaluate();
             this.animals = nextGeneration();
             repopulate();

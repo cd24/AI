@@ -54,7 +54,7 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
     public void train(SampleData data){
         labels = setToArrayList(data.allLabels());
         perceptron = new MultiLayer(1600, num_hidden(), num_out());
-        training_iter = 250;
+        training_iter = 100;
         for (int i = 0; i < training_iter; ++i){
             for (String label : labels){
                 double[] outs = getOutputForLabel(label);
@@ -138,7 +138,9 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
 
     @Override
     public int compareTo(MutableMLP o) {
-        return (int) (this.score - o.score);
+        if (this.score < o.score) return 1;
+        if (this.score > o.score) return -1;
+        return 0;
     }
 
     @Override
