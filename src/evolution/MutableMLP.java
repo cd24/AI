@@ -143,7 +143,8 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        MutableMLP newGuy = crossover(this);
-        return newGuy;
+        MutableMLP clone = new MutableMLP();
+        clone.perceptron = this.perceptron;
+        return clone;
     }
 }
