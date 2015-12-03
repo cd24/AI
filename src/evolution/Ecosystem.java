@@ -72,7 +72,7 @@ public class Ecosystem {
         df.setRoundingMode(RoundingMode.CEILING);
         while(!threadsFinished()){
             double percent = ((double)(this.num_animals - this.toWork.size()))/this.num_animals;
-            System.out.printf("\rBuilding Ecosystem... %.2f\\%", (percent*100));
+            System.out.printf("\rBuilding Ecosystem... %.2f", (percent*100));
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -120,7 +120,7 @@ public class Ecosystem {
         System.out.println("Started at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
             double progress = ((double)i/num_generation) * 100;
-            System.out.printf("\rGeneration %d of %d: %.2f\\% Complete", i, num_generation, progress);
+            System.out.printf("\rGeneration %d of %d: %.2f Complete", i, num_generation, progress);
             evaluate();
             this.animals = nextGeneration();
             repopulate();
