@@ -7,14 +7,16 @@ import search.core.Duple;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class Ecosystem {
-    String outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults.csv";
+    String outPath = "";
     int num_animals = 1000,
         num_generation = 1000,
         carry_over = (int) (0.1 * num_animals),
@@ -64,10 +66,11 @@ public class Ecosystem {
             trainer.start();
             threads[i] = trainer;
         }
-
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.CEILING);
         while(!threadsFinished()){
             double percent = ((double)(this.num_animals - this.toWork.size()))/this.num_animals;
-            System.out.print("\rBuilding Ecosystem... " + (percent*100) + "%");
+            System.out.printf("\rBuilding Ecosystem... %.2f\\%", (percent*100));
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -132,6 +135,7 @@ public class Ecosystem {
     }
 
     public void printWeights() throws FileNotFoundException {
+        outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults" + mutationRate + "_" + crossoverRate + ".csv";
         MutableMLP[] strongest = nextGeneration();
         File saveLoc = new File(outPath);
         PrintWriter writer = new PrintWriter(saveLoc);
