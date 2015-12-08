@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.DoubleAccumulator;
 public class Ecosystem {
     String outPath = "";
     int num_animals = 1000,
-        num_generation = 1000,
+        num_generation = 10000,
         carry_over = (int) (0.1 * num_animals),
         num_cores = Runtime.getRuntime().availableProcessors();
     MutableMLP[] animals;
@@ -73,7 +73,7 @@ public class Ecosystem {
         df.setRoundingMode(RoundingMode.CEILING);
         while(!threadsFinished()){
             double percent = ((double)(this.num_animals - this.toWork.size()))/this.num_animals;
-            System.out.printf("\rBuilding Ecosystem... %.2f", (percent*100));
+            System.out.printf("\rBuilding Ecosystem... %.2f%s", (percent*100), "%");
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -118,10 +118,10 @@ public class Ecosystem {
     }
 
     public void run() throws InterruptedException {
-        System.out.println("Started at: " + dateFormat.format(new Date()));
+        System.out.println("Started evolution at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
             double progress = ((double)i/num_generation) * 100;
-            System.out.printf("\rGeneration %d of %d: %.2f Complete", i, num_generation, progress);
+            System.out.printf("\rGeneration %d of %d: %.2f%s Complete", i, num_generation, progress, "%");
             evaluate();
             this.animals = nextGeneration();
             repopulate();
@@ -134,7 +134,7 @@ public class Ecosystem {
             System.out.println("Couldn't write to file.");
             e.printStackTrace();
         }
-        report(new PrintWriter(System.out));
+        report(null);
     }
 
     public void printWeights() throws FileNotFoundException {
@@ -153,8 +153,13 @@ public class Ecosystem {
     public void report(PrintWriter out){
         MutableMLP[] strongest = nextGeneration();
         for (int i = 0; i < carry_over; ++i){
-            out.println(i + "; " + evaluate(strongest[i]));
+            if (out != null)
+                out.println(i + "; " + evaluate(strongest[i]));
+            else
+                System.out.println(i + "; " + evaluate(strongest[i]));
         }
+        if (out != null)
+            out.println("-------------------------\n-------------------------\n");
     }
 
     public void repopulate(){
@@ -167,8 +172,9 @@ public class Ecosystem {
                 MutableMLP parent2 = animals[random.nextInt(carry_over)];
                 animals[i] = animals[i].crossover(parent2);
             }
+            int num_edges = animals[i].perceptron.numInputNodes() + animals[i].perceptron.numHiddenNodes() + animals[i].perceptron.numOutputNodes();
             if (magicNumber < mutationRate)
-                animals[i] = animals[i].mutate();
+                animals[i] = animals[i].mutate(mutationRate);
         }
         setLabels();
     }
@@ -253,8 +259,7 @@ public class Ecosystem {
         ecosystem.mutationRate = mutationRate;
         ecosystem.crossover_enabled = crossoverRate > 0;
         ecosystem.crossoverRate = crossoverRate;
-        //run
-        System.out.print("\rRunning...");
+
         ecosystem.run();
     }
 
