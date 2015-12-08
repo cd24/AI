@@ -6,6 +6,7 @@ import search.core.Duple;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -133,7 +134,7 @@ public class Ecosystem {
             System.out.println("Couldn't write to file.");
             e.printStackTrace();
         }
-        report();
+        report(new PrintWriter(System.out));
     }
 
     public void printWeights() throws FileNotFoundException {
@@ -141,6 +142,7 @@ public class Ecosystem {
         MutableMLP[] strongest = nextGeneration();
         File saveLoc = new File(outPath);
         PrintWriter writer = new PrintWriter(saveLoc);
+        report(writer);
         for (int i = 0; i < carry_over; ++i){
             MutableMLP out = strongest[i];
             writer.println(i);
@@ -148,10 +150,10 @@ public class Ecosystem {
         }
     }
 
-    public void report(){
+    public void report(PrintWriter out){
         MutableMLP[] strongest = nextGeneration();
         for (int i = 0; i < carry_over; ++i){
-            System.out.println(i + "; " + evaluate(strongest[i]));
+            out.println(i + "; " + evaluate(strongest[i]));
         }
     }
 
