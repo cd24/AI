@@ -16,16 +16,6 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
     double layerThreshold = 0.4;
     public double score = 0;
 
-    /*
-    public MutableMLP crossover(MutableMLP other){
-        //simple crossover
-        MutableMLP child = new MutableMLP();
-        child.perceptron.inputToHidden = other.perceptron.inputToHidden;
-        child.perceptron.hiddenToOutput = this.perceptron.hiddenToOutput;
-        return child;
-    }
-    */
-
     public MutableMLP crossover(MutableMLP other){
         try {
             MutableMLP child = (MutableMLP) this.clone();

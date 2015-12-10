@@ -6,7 +6,6 @@ import search.core.Duple;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -14,18 +13,18 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class Ecosystem {
     String outPath = "";
-    int num_animals = 1000,
-        num_generation = 10000,
+    static int num_animals = 1000,
+        num_generation = 1000,
         carry_over = (int) (0.1 * num_animals),
-        num_cores = Runtime.getRuntime().availableProcessors();
+        num_cores = Runtime.getRuntime().availableProcessors(),
+        crossoverType = 0;
     MutableMLP[] animals;
     double[] ranking;
-    boolean crossover_enabled = false;
-    double mutationRate = (crossover_enabled ? 0.3 : 0.6), crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
+    static boolean crossover_enabled = false;
+    static double mutationRate = (crossover_enabled ? 0.3 : 0.6), crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
     Duple<String, Drawing>[] testData;
     Random random;
@@ -37,7 +36,7 @@ public class Ecosystem {
     public Ecosystem(int size, Duple<String, Drawing>[] data, String[] allLabels) {
         this.num_animals = size;
         this.toWork = new ArrayBlockingQueue<>(this.num_animals);
-        this.worked = new ArrayBlockingQueue<MutableMLP>(this.num_animals);
+        this.worked = new ArrayBlockingQueue<>(this.num_animals);
         this.carry_over = (int) (0.1 * num_animals);
         animals = new MutableMLP[num_animals];
         ranking = new double[num_animals];
@@ -45,8 +44,8 @@ public class Ecosystem {
         this.testData = data;
         SampleData dat = new SampleData();
 
-        for (int i = 0; i < this.testData.length; ++i){
-            dat.addDrawing(this.testData[i].getFirst(), this.testData[i].getSecond());
+        for (Duple<String, Drawing> aTestData : this.testData) {
+            dat.addDrawing(aTestData.getFirst(), aTestData.getSecond());
         }
 
         createPopulation();
@@ -100,9 +99,7 @@ public class Ecosystem {
     }
 
     public void populateWorkQueue(){
-        for (int i = 0; i < this.num_animals; ++i){
-            this.toWork.add(animals[i]);
-        }
+        this.toWork.addAll(Arrays.asList(animals));
     }
 
     public void createPopulation(){
@@ -172,7 +169,6 @@ public class Ecosystem {
                 MutableMLP parent2 = animals[random.nextInt(carry_over)];
                 animals[i] = animals[i].crossover(parent2);
             }
-            int num_edges = animals[i].perceptron.numInputNodes() + animals[i].perceptron.numHiddenNodes() + animals[i].perceptron.numOutputNodes();
             if (magicNumber < mutationRate)
                 animals[i] = animals[i].mutate(mutationRate);
         }
@@ -216,14 +212,14 @@ public class Ecosystem {
             evaluator.start();
             this.threads[i] = evaluator;
         }
-        while(!threadsFinished()){ /* Wait for Threads to Finish */ }
+        while(!threadsFinished()){Thread.sleep(100); }
         deloadWork();
         Arrays.sort(animals);
     }
 
     public int getSampleIndex(){
         double sampleLocal = Math.random();
-        int index = 0;
+        int index;
         if (sampleLocal < topTenChance)
             index = random.nextInt(animals.length/10);
         else if (sampleLocal < topFiftyChance)
@@ -236,8 +232,7 @@ public class Ecosystem {
 
     private double evaluate(MutableMLP animal){
         double num_correct = 0;
-        for (int i = 0; i < testData.length; ++i){
-            Duple<String, Drawing> element = testData[i];
+        for (Duple<String, Drawing> element : testData) {
             String answer = animal.classify(element.getSecond());
             if (answer.equals(element.getFirst()))
                 num_correct++;
@@ -245,21 +240,16 @@ public class Ecosystem {
         return num_correct/testData.length;
     }
 
-    public static void main(String[] args) throws FileNotFoundException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         //read in drawing files
-        Double crossoverRate = Double.parseDouble(args[0]), mutationRate = Double.parseDouble(args[1]);
-        Integer population = Integer.parseInt(args[2]);
+        setupFromArgs(args);
 
         Duple<Duple<String, Drawing>[], String[]> info = getDrawings();
         Duple<String, Drawing>[] drawigns = info.getFirst();
         String[] labels = info.getSecond();
         //build ecosystem
         System.out.print("\rBuilding Ecosystem...");
-        Ecosystem ecosystem = new Ecosystem(population, drawigns, labels);
-        ecosystem.mutationRate = mutationRate;
-        ecosystem.crossover_enabled = crossoverRate > 0;
-        ecosystem.crossoverRate = crossoverRate;
-
+        Ecosystem ecosystem = new Ecosystem(num_animals, drawigns, labels);
         ecosystem.run();
     }
 
@@ -268,10 +258,29 @@ public class Ecosystem {
         File data = new File(path);
         System.out.print("Loading Data...");
         SampleData loaded = SampleData.parseDataFrom(data);
-        Duple<String, Drawing>[] drawings = new Duple[loaded.numDrawings()];
+        Duple<String,Drawing>[] drawings = new Duple[loaded.numDrawings()];
         for (int i = 0; i < loaded.numDrawings(); ++i){
             drawings[i] = loaded.getLabelAndDrawing(i);
         }
-        return new Duple<>(drawings, loaded.allLabels().toArray(new String[]{}));
+        return new Duple<>(drawings, loaded.allLabels().toArray(new String[loaded.numLabels()]));
+    }
+
+    public static void setupFromArgs(String[] args) throws Exception {
+        if (args.length % 2 == 1){
+            throw new Exception("Please format the input correctly (.jar -flag value)");
+        }
+        String crossoverFlag = "-c", mutationFlag = "-m",  generationFlag = "-g", populationFlag = "-p", crossoverTypeFlag = "-ct";
+        for (int i = 0; i < args.length; i += 2){
+            if (args[i].equals(crossoverFlag))
+                crossoverRate = Double.parseDouble(args[i+1]);
+            else if (args[i].equals(mutationFlag))
+                mutationRate = Double.parseDouble(args[i+1]);
+            else if (args[i].equals(generationFlag))
+                num_generation = Integer.parseInt(args[i+1]);
+            else if (args[i].equals(populationFlag))
+                num_animals = Integer.parseInt(args[i+1]);
+            else if (args[i].equals(crossoverTypeFlag))
+                crossoverType = Integer.parseInt(args[i+1]);
+        }
     }
 }
