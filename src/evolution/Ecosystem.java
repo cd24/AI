@@ -91,8 +91,11 @@ public class Ecosystem {
     }
 
     public boolean threadsFinished(){
+        boolean stuck = this.toWork.isEmpty();
         for (int i = 0; i < num_cores; ++i){
-            if (threads[i].isAlive())
+            if (stuck)
+                threads[i].interrupt();
+            else if (threads[i].isAlive())
                 return false;
         }
         return true;
@@ -117,8 +120,8 @@ public class Ecosystem {
     public void run() throws InterruptedException {
         System.out.println("Started evolution at: " + dateFormat.format(new Date()));
         for (int i = 0; i < num_generation; ++i) {
-            double progress = ((double)i/num_generation) * 100;
-            System.out.printf("\rGeneration %d of %d: %.2f%s Complete", i, num_generation, progress, "%");
+            double progress = ((double)(i + 1)/num_generation) * 100;
+            System.out.printf("\rGeneration %d of %d: %.2f%s Complete", i+ 1, num_generation, progress, "%");
             evaluate();
             this.animals = nextGeneration();
             repopulate();
@@ -135,7 +138,7 @@ public class Ecosystem {
     }
 
     public void printWeights() throws FileNotFoundException {
-        outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults" + mutationRate + "_" + crossoverRate + ".csv";
+        outPath = System.getProperty("user.dir") + File.separator + "EvolutionResults" + mutationRate + "_" + crossoverRate + "_mut" + crossoverType +".csv";
         MutableMLP[] strongest = nextGeneration();
         File saveLoc = new File(outPath);
         PrintWriter writer = new PrintWriter(saveLoc);
@@ -167,7 +170,7 @@ public class Ecosystem {
             animals[i] = animals[random.nextInt(carry_over)];
             if (magicNumber < crossoverRate && crossover_enabled){
                 MutableMLP parent2 = animals[random.nextInt(carry_over)];
-                animals[i] = animals[i].crossover(parent2);
+                animals[i] = animals[i].crossover(parent2, crossoverType);
             }
             if (magicNumber < mutationRate)
                 animals[i] = animals[i].mutate(mutationRate);
