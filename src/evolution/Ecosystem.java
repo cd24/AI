@@ -16,7 +16,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Ecosystem {
     String outPath = "";
-    static int num_animals = 1000,
+    static int num_animals = 100,
         num_generation = 1000,
         carry_over = (int) (0.1 * num_animals),
         num_cores = Runtime.getRuntime().availableProcessors(),
@@ -24,7 +24,7 @@ public class Ecosystem {
     MutableMLP[] animals;
     double[] ranking;
     static boolean crossover_enabled = false;
-    static double mutationRate = (crossover_enabled ? 0.3 : 0.6), crossoverRate = 0.4, topTenChance = 0.7, topFiftyChance = 0.9;
+    static double mutationRate = 0.4, crossoverRate = 0.1, topTenChance = 0.7, topFiftyChance = 0.9;
     String[] allLabels;
     Duple<String, Drawing>[] testData;
     Random random;
