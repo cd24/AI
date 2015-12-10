@@ -51,7 +51,7 @@ public class Ecosystem {
 
         createPopulation();
         populateWorkQueue();
-        System.out.println("Environment using " + this.num_cores + " threads for training and evaluation.");
+        System.out.println("\rEnvironment using " + this.num_cores + " threads for training and evaluation.");
 
         for (int i = 0; i < num_cores; ++i){
             Thread trainer = new Thread(()->{
