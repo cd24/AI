@@ -74,30 +74,34 @@ public class MutableMLP extends MultiLayerBitwise implements Comparable<MutableM
 
     public MutableMLP mutate(double chance){
         MutableMLP thing = this.mutate();
-
-        int num_edges = num_hidden + num_outputs + num_inputs;
-        for (int i = 0; i < num_edges; ++i){
+        int max_edge_mod = 10;
+        for (int i = 0; i < max_edge_mod; ++i){
             if (Math.random() < chance)
-                thing = thing.mutate();
+                thing.mutateInPlace();
         }
         return thing;
     }
 
-    public MutableMLP mutate(){
+    public void mutateInPlace(){
         double layerRandom = Math.random();
         Duple<Integer, Integer> indexRandom = getMutateIndex(layerRandom);
+        if (layerRandom < layerThreshold) {
+            double[][] weightsTemp = perceptron.inputToHidden.weights;
+            weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
+            perceptron.inputToHidden.weights = weightsTemp;
+        }
+        else {
+            double[][] weightsTemp = perceptron.hiddenToOutput.weights;
+            weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
+            perceptron.hiddenToOutput.weights = weightsTemp;
+        }
+    }
+
+    public MutableMLP mutate(){
+
         try {
             MutableMLP clone = (MutableMLP) this.clone();
-            if (layerRandom < layerThreshold) {
-                double[][] weightsTemp = clone.perceptron.inputToHidden.weights;
-                weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
-                clone.perceptron.inputToHidden.weights = weightsTemp;
-            }
-            else {
-                double[][] weightsTemp = clone.perceptron.hiddenToOutput.weights;
-                weightsTemp[indexRandom.getFirst()][indexRandom.getSecond()] += Math.random();
-                clone.perceptron.hiddenToOutput.weights = weightsTemp;
-            }
+            clone.mutateInPlace();
             return clone;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
